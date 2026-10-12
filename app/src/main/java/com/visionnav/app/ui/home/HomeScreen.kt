@@ -38,6 +38,7 @@ import com.visionnav.app.R
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.AlertArea
 import com.visionnav.app.ui.components.BigActionButton
+import com.visionnav.app.ui.components.ListGroup
 import com.visionnav.app.ui.components.LongPressActionButton
 import com.visionnav.app.ui.components.MinTouchTarget
 import com.visionnav.app.ui.contract.AppUiState
@@ -154,8 +155,8 @@ fun HomeScreen(
             }
             Spacer(Modifier.height(10.dp))
 
-            // A plain list: rows separated by dividers (AURA: borders over boxes).
-            Column(Modifier.fillMaxWidth()) {
+            // One outlined list, rows separated by dividers (AURA §07: borders over boxes).
+            ListGroup {
                 state.lastSpoken?.let { said ->
                     BigActionButton(
                         text = stringResource(R.string.home_repeat),

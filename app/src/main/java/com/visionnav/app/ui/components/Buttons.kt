@@ -29,8 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -61,7 +59,8 @@ private data class ActionColors(
  * AURA §28 roles:
  *  PRIMARY   = solid neutral (dark) — the one main action on a screen.
  *  SECONDARY = outline — normal actions.
- *  QUIET     = list row (no box, divider below) — navigation to other screens, settings.
+ *  QUIET     = list row. Inside a ListGroup it is a plain row (the group draws outline and dividers);
+ *              on its own it draws as a one-row group.
  *  DANGER    = risk status treatment — SOS / stop.
  * A press tints the control so it is visible to low-vision users; focus draws a thick info ring.
  */
@@ -71,7 +70,7 @@ private fun colorsFor(style: ActionStyle): ActionColors {
     return when (style) {
         ActionStyle.PRIMARY -> ActionColors(aura.primary, aura.onPrimary, aura.primary.copy(alpha = 0.82f), null)
         ActionStyle.SECONDARY -> ActionColors(aura.surface, aura.text, aura.surfaceMuted, aura.borderStrong)
-        ActionStyle.QUIET -> ActionColors(Color.Transparent, aura.text, aura.surfaceMuted, null)
+        ActionStyle.QUIET -> ActionColors(aura.surface, aura.text, aura.surfaceMuted, null)
         ActionStyle.DANGER -> ActionColors(aura.risk, aura.onRisk, aura.risk.copy(alpha = 0.85f), null)
     }
 }
@@ -171,16 +170,15 @@ private fun ActionSurface(
     val pressed by interaction.collectIsPressedAsState()
     val large = minHeight >= PrimaryTouchTarget
     val quiet = style == ActionStyle.QUIET
-    val shape = if (quiet) RectangleShape else RoundedCornerShape(12.dp)
+    val inGroup = quiet && LocalInListGroup.current
+    val shape = if (inGroup) RectangleShape else RoundedCornerShape(12.dp)
     var m = modifier
         .fillMaxWidth()
         .heightIn(min = minHeight)
         .clip(shape)
         .background(if (pressed) colors.pressed else colors.container)
-    if (colors.outline != null) m = m.border(1.5.dp, colors.outline, shape)
-    if (quiet) m = m.drawBehind {
-        drawLine(aura.border, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
-    }
+    val outline = colors.outline ?: if (quiet && !inGroup) aura.borderStrong else null
+    if (outline != null) m = m.border(1.5.dp, outline, shape)
     if (focused) m = m.border(3.dp, aura.info, shape)
     m = m.then(clickModifier(interaction))
     if (stateDescription != null) m = m.semantics { this.stateDescription = stateDescription }
@@ -188,7 +186,7 @@ private fun ActionSurface(
 
     CompositionLocalProvider(LocalContentColor provides colors.content) {
         Row(
-            modifier = m.padding(horizontal = if (quiet) 4.dp else 22.dp, vertical = 16.dp),
+            modifier = m.padding(horizontal = if (quiet) 18.dp else 22.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {

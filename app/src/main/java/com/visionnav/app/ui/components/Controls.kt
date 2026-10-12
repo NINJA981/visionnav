@@ -1,5 +1,6 @@
 package com.visionnav.app.ui.components
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.background
@@ -73,10 +74,15 @@ private fun Modifier.listGroup(): Modifier {
         .border(1.5.dp, aura.borderStrong, GroupShape)
 }
 
+/** True inside a [ListGroup]: quiet rows then draw as plain rows and let the group draw the outline. */
+val LocalInListGroup = staticCompositionLocalOf { false }
+
 /** Rows grouped in one outlined list. */
 @Composable
 fun ListGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.listGroup(), verticalArrangement = Arrangement.spacedBy(Divider), content = content)
+    CompositionLocalProvider(LocalInListGroup provides true) {
+        Column(modifier.listGroup(), verticalArrangement = Arrangement.spacedBy(Divider), content = content)
+    }
 }
 
 /** One row of information (not an action) inside a [ListGroup]. */
