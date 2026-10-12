@@ -3,5 +3,8 @@
     <color name="vn_navy">#FF07142B</color>
     <color name="vn_navy_light">#FF16305C</color>
     <color name="vn_amber">#FFFFC629</color>
-    <color name="ic_launcher_background">#FF07142B</color>
+    <color name="ic_launcher_background">#FF171717</color>
+    <color name="aura_background">#FFF7F7F5</color>
+    <color name="aura_background_dark">#FF1B1B1A</color>
+    <color name="aura_text">#FF171717</color>
 </resources>

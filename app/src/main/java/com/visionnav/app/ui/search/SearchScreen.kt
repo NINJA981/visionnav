@@ -28,8 +28,8 @@ import com.visionnav.app.settings.DistanceUnits
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.AlertArea
 import com.visionnav.app.ui.components.BigActionButton
-import com.visionnav.app.ui.components.KerbField
-import com.visionnav.app.ui.components.KerbstoneGroup
+import com.visionnav.app.ui.components.AuraTextField
+import com.visionnav.app.ui.components.ListGroup
 import com.visionnav.app.ui.components.MinTouchTarget
 import com.visionnav.app.ui.components.SectionHeading
 import com.visionnav.app.ui.components.VnScreen
@@ -52,7 +52,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     units: DistanceUnits = DistanceUnits.METRIC,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val search = state.search
     var query by rememberSaveable { mutableStateOf(search.query) }
     val focusManager = LocalFocusManager.current
@@ -70,7 +70,7 @@ fun SearchScreen(
         onBack = onBack,
         pinned = { AlertArea(state, { onAction(UiAction.DismissAlert(it)) }, { onAction(UiAction.DismissError(it)) }) },
     ) {
-        KerbField(
+        AuraTextField(
             value = query,
             onValueChange = { query = it },
             label = stringResource(R.string.search_field_label),
@@ -80,7 +80,7 @@ fun SearchScreen(
             keyboardActions = KeyboardActions(onSearch = { submit() }),
         )
         BigActionButton(text = stringResource(R.string.search_action), onClick = submit, style = ActionStyle.PRIMARY)
-        KerbstoneGroup {
+        ListGroup {
             BigActionButton(
                 text = stringResource(if (state.isListening) R.string.home_listening else R.string.search_voice),
                 onClick = { onAction(if (state.isListening) UiAction.StopVoiceCommand else UiAction.StartVoiceCommand) },
@@ -114,7 +114,7 @@ fun SearchScreen(
             Text(
                 summary,
                 style = MaterialTheme.typography.headlineSmall,
-                color = if (problem) k.amberInk else k.onGround,
+                color = if (problem) aura.attention else aura.text,
                 modifier = Modifier.semantics {
                     liveRegion = LiveRegionMode.Polite
                     if (search.results.isNotEmpty()) heading()
@@ -131,7 +131,7 @@ fun SearchScreen(
 
         if (state.savedPlaces.isNotEmpty()) {
             SectionHeading(stringResource(R.string.home_saved_places))
-            KerbstoneGroup {
+            ListGroup {
                 state.savedPlaces.forEach { saved ->
                     BigActionButton(
                         text = saved.name,
@@ -184,7 +184,7 @@ fun RoutePreviewScreen(
     onAction: (UiAction) -> Unit,
     onBack: () -> Unit,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val search = state.search
     val lead: TextStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 26.sp, lineHeight = 36.sp)
     VnScreen(
@@ -203,7 +203,7 @@ fun RoutePreviewScreen(
             style = MaterialTheme.typography.displayMedium,
             modifier = Modifier.semantics { heading() },
         )
-        place.address?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim) }
+        place.address?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary) }
 
         val preview = search.preview
         when {
@@ -215,7 +215,7 @@ fun RoutePreviewScreen(
             search.previewError != null -> Text(
                 search.previewError,
                 style = MaterialTheme.typography.headlineSmall,
-                color = k.amberInk,
+                color = aura.attention,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
             preview != null -> {
@@ -228,7 +228,7 @@ fun RoutePreviewScreen(
                 preview.crossingsText?.takeUnless { isNoneText(it) }?.let {
                     Text(sentence(it), style = MaterialTheme.typography.titleLarge)
                 }
-                Text(stringResource(R.string.preview_crossing_note), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+                Text(stringResource(R.string.preview_crossing_note), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
                 BigActionButton(
                     text = stringResource(R.string.preview_start),
                     onClick = { onAction(UiAction.StartNavigation) },

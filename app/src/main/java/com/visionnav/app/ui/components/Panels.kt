@@ -59,12 +59,9 @@ import com.visionnav.app.R
 import com.visionnav.app.settings.EmergencyContact
 import com.visionnav.app.ui.contract.SosUi
 import com.visionnav.app.ui.contract.TorchUi
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.bleed
-import com.visionnav.app.ui.theme.Asphalt
-import com.visionnav.app.ui.theme.KerbGrey
-import com.visionnav.app.ui.theme.Paint
-import com.visionnav.app.ui.theme.SignalAmber
+import com.visionnav.app.ui.aura.ScreenGutter
+import com.visionnav.app.ui.theme.AuraSurface
+import com.visionnav.app.ui.theme.AuraText
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /** Echo of the last utterance as a quiet kerbstone that repeats it. Not a live region: TTS already spoke it. */
@@ -85,13 +82,13 @@ fun LastSpokenPanel(lastSpoken: String?, onRepeat: () -> Unit, modifier: Modifie
 @Composable
 fun TorchControl(torch: TorchUi, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     if (!torch.available) return
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (torch.lowLight && !torch.on) {
             Text(
                 stringResource(R.string.torch_low_light),
                 style = MaterialTheme.typography.bodyLarge,
-                color = k.amberInk,
+                color = aura.attention,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
@@ -163,14 +160,14 @@ fun SosDialog(sos: SosUi, onConfirm: () -> Unit, onCancel: () -> Unit, onDismiss
 /** The red SOS surface itself (separate from the window so it can be previewed). */
 @Composable
 fun SosTakeover(sos: SosUi, onConfirm: () -> Unit, onCancel: () -> Unit, onDismissResult: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val pane = when (sos) {
         is SosUi.AwaitingConfirmation -> stringResource(R.string.sos_confirm_title)
         SosUi.Sending -> stringResource(R.string.sos_sending_label)
         is SosUi.Failed -> stringResource(R.string.sos_failed_title)
         else -> stringResource(R.string.sos_result_title)
     }
-    Surface(Modifier.fillMaxSize(), color = k.red, contentColor = k.onRed) {
+    Surface(Modifier.fillMaxSize(), color = aura.risk, contentColor = aura.onRisk) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -201,15 +198,15 @@ fun SosTakeover(sos: SosUi, onConfirm: () -> Unit, onCancel: () -> Unit, onDismi
                         text = stringResource(R.string.sos_confirm_send),
                         onClick = onConfirm,
                         onClickLabel = stringResource(R.string.sos_send_hint),
-                        fill = Paint,
-                        ink = Asphalt,
+                        fill = AuraSurface,
+                        ink = AuraText,
                         height = 128.dp,
                     )
                     SosAction(
                         text = stringResource(R.string.sos_confirm_cancel),
                         onClick = onCancel,
-                        fill = KerbGrey,
-                        ink = Paint,
+                        fill = Color.Transparent,
+                        ink = AuraSurface,
                         height = PrimaryTouchTarget,
                     )
                 }
@@ -244,15 +241,15 @@ private fun SosResult(label: String, message: String, onClose: () -> Unit) {
     SosAction(
         text = stringResource(R.string.action_close),
         onClick = onClose,
-        fill = KerbGrey,
-        ink = Paint,
+        fill = Color.Transparent,
+        ink = AuraSurface,
         height = PrimaryTouchTarget,
     )
 }
 
 /**
- * One SOS action: square paint running edge to edge. Colours are fixed (not themed) because the
- * red ground is the same in both themes; pressing flashes amber.
+ * One SOS action on the risk surface. Colours are fixed (not themed) because the red surface is the
+ * same in both themes: a solid white action for "Send", an outlined one for "Cancel" (AURA §28).
  */
 @Composable
 private fun SosAction(
@@ -266,13 +263,16 @@ private fun SosAction(
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(12.dp)
+    val outlined = fill == Color.Transparent
     Row(
         Modifier
-            .bleed()
             .fillMaxWidth()
             .heightIn(min = height)
-            .background(if (pressed) SignalAmber else fill)
-            .then(if (focused) Modifier.border(6.dp, SignalAmber) else Modifier)
+            .clip(shape)
+            .background(if (pressed) (if (outlined) AuraSurface.copy(alpha = 0.18f) else fill.copy(alpha = 0.85f)) else fill)
+            .then(if (outlined) Modifier.border(2.dp, AuraSurface, shape) else Modifier)
+            .then(if (focused) Modifier.border(4.dp, AuraSurface, shape) else Modifier)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -280,10 +280,10 @@ private fun SosAction(
                 onClickLabel = onClickLabel,
                 onClick = onClick,
             )
-            .padding(horizontal = ScreenGutter + 8.dp, vertical = 18.dp),
+            .padding(horizontal = 24.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text, style = MaterialTheme.typography.displaySmall, color = if (pressed) Asphalt else ink)
+        Text(text, style = MaterialTheme.typography.headlineLarge, color = ink)
     }
 }
 
@@ -300,15 +300,15 @@ fun VnDialog(
     buttons: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        val k = VisionNavTheme.kerb
+        val aura = VisionNavTheme.aura
         val shape = RoundedCornerShape(20.dp)
         Column(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 24.dp)
                 .clip(shape)
-                .background(k.ground)
-                .border(2.dp, k.onGroundDim, shape)
+                .background(aura.background)
+                .border(2.dp, aura.textSecondary, shape)
                 .semantics { paneTitle = title }
                 .verticalScroll(rememberScrollState())
                 .padding(start = ScreenGutter, end = ScreenGutter, top = 24.dp, bottom = 20.dp),
@@ -317,14 +317,14 @@ fun VnDialog(
             Text(
                 title,
                 style = MaterialTheme.typography.headlineMedium,
-                color = k.onGround,
+                color = aura.text,
                 modifier = Modifier.semantics { heading() },
             )
             if (body != null) {
                 Text(
                     body,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = k.onGround,
+                    color = aura.text,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
@@ -359,7 +359,7 @@ fun NameInputDialog(
         body = null,
         onDismissRequest = onDismiss,
         content = {
-            KerbField(
+            AuraTextField(
                 value = value,
                 onValueChange = {
                     value = it
@@ -385,7 +385,7 @@ fun EmergencyContactsEditor(
     onRemove: (EmergencyContact) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     var name by rememberSaveable { mutableStateOf("") }
     var phone by rememberSaveable { mutableStateOf("") }
     var nameError by rememberSaveable { mutableStateOf(false) }
@@ -406,23 +406,22 @@ fun EmergencyContactsEditor(
 
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         if (contacts.isEmpty()) {
-            Text(stringResource(R.string.contacts_empty), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+            Text(stringResource(R.string.contacts_empty), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
         } else {
-            KerbstoneGroup {
+            ListGroup {
                 contacts.forEach { contact ->
                     Row(
                         Modifier
-                            .bleed()
                             .fillMaxWidth()
                             .height(IntrinsicSize.Min)
                             .heightIn(min = MinTouchTarget)
-                            .background(k.kerb)
+                            .background(aura.surface)
                             .padding(start = ScreenGutter + 8.dp, end = ScreenGutter, top = 10.dp, bottom = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-                            Text(contact.name, style = MaterialTheme.typography.titleMedium, color = k.onKerb)
-                            Text(contact.phone, style = MaterialTheme.typography.bodyLarge, color = k.onKerb)
+                            Text(contact.name, style = MaterialTheme.typography.titleMedium, color = aura.text)
+                            Text(contact.phone, style = MaterialTheme.typography.bodyLarge, color = aura.text)
                         }
                         InsetAction(
                             text = stringResource(R.string.action_remove),
@@ -433,7 +432,7 @@ fun EmergencyContactsEditor(
                 }
             }
         }
-        KerbField(
+        AuraTextField(
             value = name,
             onValueChange = {
                 name = it
@@ -443,7 +442,7 @@ fun EmergencyContactsEditor(
             errorText = if (nameError) stringResource(R.string.contact_error_name) else null,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
         )
-        KerbField(
+        AuraTextField(
             value = phone,
             onValueChange = {
                 phone = it

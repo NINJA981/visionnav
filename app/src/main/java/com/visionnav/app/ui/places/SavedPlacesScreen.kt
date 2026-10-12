@@ -46,8 +46,7 @@ import com.visionnav.app.ui.components.VnScreen
 import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.SavedPlaceUi
 import com.visionnav.app.ui.contract.UiAction
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.bleed
+import com.visionnav.app.ui.aura.ScreenGutter
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 
@@ -63,7 +62,7 @@ fun SavedPlacesScreen(
     onNavigateTo: (SavedPlaceUi) -> Unit,
     onBack: () -> Unit,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     var showSaveDialog by rememberSaveable { mutableStateOf(false) }
     var renameId by rememberSaveable { mutableStateOf<String?>(null) }
     var deleteId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -91,7 +90,7 @@ fun SavedPlacesScreen(
                     onDelete = { deleteId = saved.id },
                 )
             }
-            Text(stringResource(R.string.places_save_more), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+            Text(stringResource(R.string.places_save_more), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
             BigActionButton(
                 text = stringResource(R.string.places_save_current),
                 onClick = { showSaveDialog = true },
@@ -171,7 +170,6 @@ private fun SavedPlaceItem(saved: SavedPlaceUi, onOpen: () -> Unit, onRename: ()
         )
         Row(
             Modifier
-                .bleed()
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(3.dp),
@@ -185,7 +183,7 @@ private fun SavedPlaceItem(saved: SavedPlaceUi, onOpen: () -> Unit, onRename: ()
 /** Half-width kerbstone action. The spoken label names the place, so it is clear out of context. */
 @Composable
 private fun QuietHalf(text: String, spoken: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
@@ -193,14 +191,14 @@ private fun QuietHalf(text: String, spoken: String, onClick: () -> Unit, modifie
         modifier
             .fillMaxHeight()
             .heightIn(min = MinTouchTarget)
-            .background(if (pressed) k.amber else k.kerb)
-            .then(if (focused) Modifier.border(6.dp, k.amberInk) else Modifier)
+            .background(if (pressed) aura.primary else aura.surface)
+            .then(if (focused) Modifier.border(6.dp, aura.attention) else Modifier)
             .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = spoken }
             .padding(horizontal = ScreenGutter + 8.dp, vertical = 14.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(text, style = MaterialTheme.typography.titleMedium, color = if (pressed) k.onAmber else k.onKerb)
+        Text(text, style = MaterialTheme.typography.titleMedium, color = if (pressed) aura.onPrimary else aura.text)
     }
 }
 

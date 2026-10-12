@@ -72,7 +72,7 @@ fun VisionNavAppRoot(
     val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
     val state by appViewModel.state.collectAsStateWithLifecycle()
 
-    VisionNavTheme(themeMode = settings?.themeMode ?: ThemeMode.DARK) {
+    VisionNavTheme(themeMode = settings?.themeMode ?: ThemeMode.LIGHT) {
         val loaded = settings
         if (loaded == null) {
             FullScreenMessage(stringResource(R.string.loading))

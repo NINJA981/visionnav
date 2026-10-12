@@ -1,5 +1,7 @@
 package com.visionnav.app.ui.components
 
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,8 +48,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.visionnav.app.R
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.bleed
+import com.visionnav.app.ui.aura.ScreenGutter
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /*
@@ -56,27 +57,39 @@ import com.visionnav.app.ui.theme.VisionNavTheme
  * any row flashes it amber, like the zebra bars, so a press is visible to low-vision users.
  */
 
-/** Gap between kerbstones laid end to end. */
-private val Joint = 3.dp
+/** Divider between rows of a group (the group's background shows through the gap). */
+private val Divider = 1.dp
 
-/** Kerbstones laid end to end with thin joints. */
+private val GroupShape = RoundedCornerShape(12.dp)
+
+/** AURA list group: one outlined surface, rows separated by dividers (borders over boxes, §07). */
 @Composable
-fun KerbstoneGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Joint), content = content)
+private fun Modifier.listGroup(): Modifier {
+    val aura = VisionNavTheme.aura
+    return this
+        .fillMaxWidth()
+        .clip(GroupShape)
+        .background(aura.border)
+        .border(1.5.dp, aura.borderStrong, GroupShape)
 }
 
-/** A quiet raised surface for information (not an action). Runs edge to edge. */
+/** Rows grouped in one outlined list. */
 @Composable
-fun Kerbstone(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    val k = VisionNavTheme.kerb
-    CompositionLocalProvider(LocalContentColor provides k.onKerb) {
+fun ListGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.listGroup(), verticalArrangement = Arrangement.spacedBy(Divider), content = content)
+}
+
+/** One row of information (not an action) inside a [ListGroup]. */
+@Composable
+fun ListRow(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    val aura = VisionNavTheme.aura
+    CompositionLocalProvider(LocalContentColor provides aura.text) {
         Column(
             modifier
-                .bleed()
                 .fillMaxWidth()
                 .heightIn(min = MinTouchTarget)
-                .background(k.kerb)
-                .padding(horizontal = ScreenGutter + 8.dp, vertical = 14.dp),
+                .background(aura.surface)
+                .padding(horizontal = 18.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
             content = content,
         )
@@ -97,19 +110,18 @@ fun ToggleRow(
     description: String? = null,
     enabled: Boolean = true,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
     val stateText = stringResource(if (checked) R.string.state_on else R.string.state_off)
-    val fg = if (pressed) k.onAmber else k.onKerb
+    val fg = aura.text
     Row(
         modifier = modifier
-            .bleed()
             .fillMaxWidth()
             .heightIn(min = MinTouchTarget)
-            .background(if (pressed) k.amber else k.kerb)
-            .then(if (focused) Modifier.border(6.dp, k.amberInk) else Modifier)
+            .background(if (pressed) aura.surfaceMuted else aura.surface)
+            .then(if (focused) Modifier.border(3.dp, aura.info) else Modifier)
             .toggleable(
                 value = checked,
                 enabled = enabled,
@@ -120,7 +132,7 @@ fun ToggleRow(
             )
             .semantics { stateDescription = stateText }
             .then(if (enabled) Modifier else Modifier.alpha(0.5f))
-            .padding(start = ScreenGutter + 8.dp, end = ScreenGutter, top = 14.dp, bottom = 14.dp),
+            .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -132,12 +144,13 @@ fun ToggleRow(
         Box(
             Modifier
                 .widthIn(min = 76.dp)
-                .background(if (checked) k.amber else k.ground)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (checked) aura.primary else aura.surfaceMuted)
                 .padding(horizontal = 14.dp, vertical = 10.dp)
                 .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Text(stateText, style = MaterialTheme.typography.labelLarge, color = if (checked) k.onAmber else k.onGround)
+            Text(stateText, style = MaterialTheme.typography.labelLarge, color = if (checked) aura.onPrimary else aura.text)
         }
     }
 }
@@ -155,30 +168,26 @@ fun <T> RadioGroup(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val k = VisionNavTheme.kerb
-    Column(modifier.fillMaxWidth().selectableGroup(), verticalArrangement = Arrangement.spacedBy(Joint)) {
+    val aura = VisionNavTheme.aura
+    Column(modifier.listGroup().selectableGroup(), verticalArrangement = Arrangement.spacedBy(Divider)) {
         options.forEach { option ->
             val isSelected = option.value == selected
             val interaction = remember { MutableInteractionSource() }
             val pressed by interaction.collectIsPressedAsState()
             val focused by interaction.collectIsFocusedAsState()
             val bg = when {
-                pressed -> k.amber
-                isSelected -> k.bar
-                else -> k.kerb
+                pressed -> aura.surfaceMuted
+                isSelected -> aura.surfaceMuted
+                else -> aura.surface
             }
-            val fg = when {
-                pressed -> k.onAmber
-                isSelected -> k.onBar
-                else -> k.onKerb
-            }
+            val fg = aura.text
             Row(
                 modifier = Modifier
-                    .bleed()
                     .fillMaxWidth()
                     .heightIn(min = MinTouchTarget)
                     .background(bg)
-                    .then(if (focused) Modifier.border(6.dp, k.amberInk) else Modifier)
+                    .drawBehind { if (isSelected) drawRect(aura.primary, size = Size(5.dp.toPx(), size.height)) }
+                    .then(if (focused) Modifier.border(3.dp, aura.info) else Modifier)
                     .selectable(
                         selected = isSelected,
                         role = Role.RadioButton,
@@ -186,7 +195,7 @@ fun <T> RadioGroup(
                         indication = null,
                         onClick = { onSelect(option.value) },
                     )
-                    .padding(start = ScreenGutter + 8.dp, end = ScreenGutter + 8.dp, top = 14.dp, bottom = 14.dp),
+                    .padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
@@ -194,7 +203,7 @@ fun <T> RadioGroup(
                     Text(
                         option.label,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         color = fg,
                     )
                     if (option.description != null) {
@@ -231,8 +240,8 @@ fun StepperRow(
     canDecrease: Boolean = true,
     canIncrease: Boolean = true,
 ) {
-    KerbstoneGroup(modifier) {
-        Kerbstone(Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
+    ListGroup(modifier) {
+        ListRow(Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
             Text(title, style = MaterialTheme.typography.titleSmall)
             Text(valueText, style = MaterialTheme.typography.headlineSmall)
         }
@@ -259,7 +268,7 @@ fun StepperRow(
  * exposed through semantics, and turn the edge amber.
  */
 @Composable
-fun KerbField(
+fun AuraTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -270,16 +279,16 @@ fun KerbField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val shape = RoundedCornerShape(14.dp)
     val textStyle = (if (large) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium)
-        .copy(color = k.onKerb, fontWeight = FontWeight.SemiBold)
+        .copy(color = aura.text, fontWeight = FontWeight.SemiBold)
     val edge = when {
-        focused -> k.amberInk
-        errorText != null -> k.amberInk
-        else -> k.onGroundDim
+        focused -> aura.attention
+        errorText != null -> aura.attention
+        else -> aura.textSecondary
     }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         BasicTextField(
@@ -287,7 +296,7 @@ fun KerbField(
             onValueChange = onValueChange,
             singleLine = true,
             textStyle = textStyle,
-            cursorBrush = SolidColor(k.amberInk),
+            cursorBrush = SolidColor(aura.attention),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             interactionSource = interaction,
@@ -300,15 +309,15 @@ fun KerbField(
                         .fillMaxWidth()
                         .heightIn(min = if (large) PrimaryTouchTarget else MinTouchTarget)
                         .clip(shape)
-                        .background(k.kerb)
+                        .background(aura.surface)
                         .border(if (focused || errorText != null) 4.dp else 2.dp, edge, shape)
                         .padding(horizontal = 18.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
                 ) {
-                    Text(label, style = MaterialTheme.typography.labelMedium, color = k.onKerb)
+                    Text(label, style = MaterialTheme.typography.labelMedium, color = aura.text)
                     Box {
                         if (value.isEmpty() && placeholder != null) {
-                            Text(placeholder, style = textStyle.copy(color = k.onGroundDim, fontWeight = FontWeight.Normal))
+                            Text(placeholder, style = textStyle.copy(color = aura.textSecondary, fontWeight = FontWeight.Normal))
                         }
                         inner()
                     }
@@ -320,7 +329,7 @@ fun KerbField(
                 errorText,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
-                color = k.amberInk,
+                color = aura.attention,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
@@ -338,7 +347,7 @@ fun InsetAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
@@ -346,13 +355,15 @@ fun InsetAction(
         modifier
             .heightIn(min = MinTouchTarget)
             .widthIn(min = MinTouchTarget)
-            .background(if (pressed) k.amber else k.ground)
-            .then(if (focused) Modifier.border(5.dp, k.amberInk) else Modifier)
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (pressed) aura.surfaceMuted else aura.surface)
+            .border(1.5.dp, aura.borderStrong, RoundedCornerShape(8.dp))
+            .then(if (focused) Modifier.border(3.dp, aura.info, RoundedCornerShape(8.dp)) else Modifier)
             .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
             .semantics { this.contentDescription = contentDescription }
             .padding(horizontal = 18.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = MaterialTheme.typography.titleSmall, color = if (pressed) k.onAmber else k.onGround)
+        Text(text, style = MaterialTheme.typography.titleSmall, color = aura.text)
     }
 }

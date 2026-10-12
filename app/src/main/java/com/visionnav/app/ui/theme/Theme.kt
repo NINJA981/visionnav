@@ -1,5 +1,6 @@
 package com.visionnav.app.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
@@ -9,56 +10,66 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import com.visionnav.app.settings.ThemeMode
 
 /**
- * The street tokens every screen draws with. Dark theme is the street at night (paint on asphalt);
- * light theme inverts it (asphalt bars on paint) for users who read better on a light ground.
+ * AURA tokens (AURA_DESIGN.md §42). Every screen draws with these; no arbitrary colours in components.
+ *
+ * [primary] is the solid neutral used for the one main action on a screen (§28). Status colours
+ * ([safe], [attention], [risk], [info]) appear only where the user needs to know a state.
  */
 @Immutable
-data class KerbColors(
-    /** Ground. */
-    val ground: Color,
-    /** Text and marks on [ground]. */
-    val onGround: Color,
-    val onGroundDim: Color,
-    /** Zebra bar fill (primary actions). */
-    val bar: Color,
-    val onBar: Color,
-    /** Raised quiet surface (secondary rows, panels). */
-    val kerb: Color,
-    val onKerb: Color,
-    /** Attention: tactile pad, focus, warnings. */
-    val amber: Color,
-    val onAmber: Color,
-    /** Amber used as a stroke or text on [ground]. */
-    val amberInk: Color,
-    /** Stop: critical alerts only. */
-    val red: Color,
-    val onRed: Color,
+data class AuraColors(
+    val background: Color,
+    val surface: Color,
+    val surfaceMuted: Color,
+    /** Dividers only (decorative). */
+    val border: Color,
+    /** Outlines of interactive controls (≥ 3:1). */
+    val borderStrong: Color,
+    val text: Color,
+    val textSecondary: Color,
+    val primary: Color,
+    val onPrimary: Color,
+    val safe: Color,
+    /** Attention as text/icon colour. */
+    val attention: Color,
+    /** Risk as a fill (with [onRisk] text). */
+    val risk: Color,
+    val onRisk: Color,
+    /** Risk as text on [background]. */
+    val riskText: Color,
+    val info: Color,
     val isDark: Boolean,
 )
 
-private val NightKerb = KerbColors(
-    ground = Asphalt, onGround = Paint, onGroundDim = PaintDim,
-    bar = Paint, onBar = Asphalt,
-    kerb = KerbGrey, onKerb = Paint,
-    amber = SignalAmber, onAmber = Asphalt, amberInk = SignalAmber,
-    red = SignalRed, onRed = Paint,
-    isDark = true,
+private val LightAura = AuraColors(
+    background = AuraBackground, surface = AuraSurface, surfaceMuted = AuraSurfaceMuted,
+    border = AuraBorder, borderStrong = AuraBorderStrong,
+    text = AuraText, textSecondary = AuraTextSecondary,
+    primary = AuraText, onPrimary = AuraSurface,
+    safe = AuraSafe, attention = AuraAttention,
+    risk = AuraRisk, onRisk = AuraSurface, riskText = AuraRisk,
+    info = AuraInfo,
+    isDark = false,
 )
 
-private val DayKerb = KerbColors(
-    ground = Paint, onGround = Asphalt, onGroundDim = KerbGrey,
-    bar = Asphalt, onBar = Paint,
-    kerb = Color(0xFFDEDCD4), onKerb = Asphalt,
-    amber = SignalAmber, onAmber = Asphalt, amberInk = SignalAmberDeep,
-    red = SignalRed, onRed = Paint,
-    isDark = false,
+private val DarkAura = AuraColors(
+    background = AuraDarkBackground, surface = AuraDarkSurface, surfaceMuted = AuraDarkSurfaceMuted,
+    border = AuraDarkBorder, borderStrong = AuraDarkBorderStrong,
+    text = AuraDarkText, textSecondary = AuraDarkTextSecondary,
+    primary = AuraDarkText, onPrimary = AuraDarkBackground,
+    safe = AuraDarkSafe, attention = AuraDarkAttention,
+    risk = AuraRisk, onRisk = AuraSurface, riskText = AuraDarkRiskText,
+    info = AuraDarkInfo,
+    isDark = true,
 )
 
 /** Status / alert colours kept for existing call sites. Always paired with words. */
@@ -75,47 +86,47 @@ data class VisionNavStatusColors(
     val bad: Color,
 )
 
-private fun statusFor(k: KerbColors) = VisionNavStatusColors(
-    critical = k.red, onCritical = k.onRed,
-    warning = k.amber, onWarning = k.onAmber,
-    info = k.kerb, onInfo = k.onKerb,
-    good = k.onGround, degraded = k.amberInk, bad = if (k.isDark) Color(0xFFFF8A80) else k.red,
+private fun statusFor(a: AuraColors) = VisionNavStatusColors(
+    critical = a.risk, onCritical = a.onRisk,
+    warning = a.attention, onWarning = a.surface,
+    info = a.info, onInfo = a.surface,
+    good = a.safe, degraded = a.attention, bad = a.riskText,
 )
 
-private fun schemeFor(k: KerbColors): ColorScheme {
-    val base = if (k.isDark) darkColorScheme() else lightColorScheme()
+private fun schemeFor(a: AuraColors): ColorScheme {
+    val base = if (a.isDark) darkColorScheme() else lightColorScheme()
     return base.copy(
-        primary = k.bar, onPrimary = k.onBar,
-        primaryContainer = k.amber, onPrimaryContainer = k.onAmber,
-        secondary = k.amberInk, onSecondary = k.ground,
-        secondaryContainer = k.kerb, onSecondaryContainer = k.onKerb,
-        tertiary = k.amber, onTertiary = k.onAmber,
-        background = k.ground, onBackground = k.onGround,
-        surface = k.ground, onSurface = k.onGround,
-        surfaceVariant = k.kerb, onSurfaceVariant = k.onGroundDim,
-        surfaceContainerLowest = k.ground, surfaceContainerLow = k.ground,
-        surfaceContainer = k.kerb, surfaceContainerHigh = k.kerb, surfaceContainerHighest = k.kerb,
-        outline = k.onGroundDim, outlineVariant = k.kerb,
-        error = k.red, onError = k.onRed, errorContainer = k.red, onErrorContainer = k.onRed,
-        inverseSurface = k.bar, inverseOnSurface = k.onBar, inversePrimary = k.amber,
+        primary = a.primary, onPrimary = a.onPrimary,
+        primaryContainer = a.surfaceMuted, onPrimaryContainer = a.text,
+        secondary = a.textSecondary, onSecondary = a.surface,
+        secondaryContainer = a.surfaceMuted, onSecondaryContainer = a.text,
+        tertiary = a.info, onTertiary = a.surface,
+        background = a.background, onBackground = a.text,
+        surface = a.surface, onSurface = a.text,
+        surfaceVariant = a.surfaceMuted, onSurfaceVariant = a.textSecondary,
+        surfaceContainerLowest = a.surface, surfaceContainerLow = a.surface,
+        surfaceContainer = a.surface, surfaceContainerHigh = a.surfaceMuted, surfaceContainerHighest = a.surfaceMuted,
+        outline = a.borderStrong, outlineVariant = a.border,
+        error = a.riskText, onError = a.surface, errorContainer = a.risk, onErrorContainer = a.onRisk,
+        inverseSurface = a.text, inverseOnSurface = a.background, inversePrimary = a.surface,
     )
 }
 
-val LocalKerb = staticCompositionLocalOf { NightKerb }
-val LocalStatusColors = staticCompositionLocalOf { statusFor(NightKerb) }
+val LocalAura = staticCompositionLocalOf { LightAura }
+val LocalStatusColors = staticCompositionLocalOf { statusFor(LightAura) }
 
-/** Paint has square ends: corners are reserved for things you hold (pad, dialogs, fields). */
-private val KerbShapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp),
-    small = RoundedCornerShape(6.dp),
-    medium = RoundedCornerShape(10.dp),
-    large = RoundedCornerShape(14.dp),
-    extraLarge = RoundedCornerShape(20.dp),
+/** §06: restrained corners. Controls 8, cards 12, large surfaces 16. */
+private val AuraShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(16.dp),
 )
 
 @Composable
 fun VisionNavTheme(
-    themeMode: ThemeMode = ThemeMode.DARK,
+    themeMode: ThemeMode = ThemeMode.LIGHT,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -123,12 +134,23 @@ fun VisionNavTheme(
         ThemeMode.LIGHT -> false
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
-    val kerb = if (dark) NightKerb else DayKerb
-    CompositionLocalProvider(LocalKerb provides kerb, LocalStatusColors provides statusFor(kerb)) {
+    val aura = if (dark) DarkAura else LightAura
+    // Status/navigation bar icons follow the app theme, not the system's (the user may pick light on a dark system).
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !dark
+                isAppearanceLightNavigationBars = !dark
+            }
+        }
+    }
+    CompositionLocalProvider(LocalAura provides aura, LocalStatusColors provides statusFor(aura)) {
         MaterialTheme(
-            colorScheme = schemeFor(kerb),
+            colorScheme = schemeFor(aura),
             typography = VisionNavTypography,
-            shapes = KerbShapes,
+            shapes = AuraShapes,
             content = content,
         )
     }
@@ -137,6 +159,6 @@ fun VisionNavTheme(
 object VisionNavTheme {
     val status: VisionNavStatusColors
         @Composable get() = LocalStatusColors.current
-    val kerb: KerbColors
-        @Composable get() = LocalKerb.current
+    val aura: AuraColors
+        @Composable get() = LocalAura.current
 }

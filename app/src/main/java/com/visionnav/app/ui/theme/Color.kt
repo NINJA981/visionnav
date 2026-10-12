@@ -3,38 +3,41 @@ package com.visionnav.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /*
- * "Kerb" palette — taken from the street, not from a UI kit.
+ * AURA palette (see AURA_DESIGN.md §03): a restrained neutral foundation, with status colours
+ * used only where they carry meaning. Colour is never the only signal; every status also has words.
  *
- * Asphalt is the ground, thermoplastic road paint is the primary mark (zebra bars, text), kerb
- * concrete is the raised secondary surface, and the two signal colours are used only for what
- * they mean on a real street: amber = attention, red = stop. Colour never carries meaning alone;
- * every signal also has words (and, for alerts, an earcon and vibration).
- *
- * Contrast (WCAG 2.x, computed): Paint/Asphalt 13.1:1, PaintDim/Asphalt 8.3:1, Amber/Asphalt 8.5:1,
- * Paint/KerbGrey 9.6:1, AmberDeep/Paint 5.2:1, Paint/SignalRed 4.95:1 (critical text is large and
- * bold, AAA-large). SignalRed on Asphalt is only 2.6:1, so red is a fill, never text on the ground.
+ * Accessibility adjustments to the spec, for a low-vision audience (contrast computed, WCAG 2.x):
+ *  - Control outlines use BorderStrong #8F8F89 (3.0:1, meets 1.4.11 non-text contrast). The spec's
+ *    #DEDED9 (1.3:1) is kept for dividers only, where it is decorative.
+ *  - Attention text uses #8A5A00 (5.5:1). The spec's #A66A00 is 4.2:1, below AA for body text.
+ *  - Body text never uses TextMuted (#8A8A84, 3.2:1); it uses TextSecondary (5.4:1) or darker.
  */
 
-/** Wet-asphalt grey. The ground everything sits on (dark theme). */
-val Asphalt = Color(0xFF26282B)
+// Light (default)
+val AuraBackground = Color(0xFFF7F7F5)
+val AuraSurface = Color(0xFFFFFFFF)
+val AuraSurfaceMuted = Color(0xFFF0F0ED)
+val AuraBorder = Color(0xFFDEDED9)
+val AuraBorderStrong = Color(0xFF8F8F89)
+val AuraText = Color(0xFF171717)
+val AuraTextSecondary = Color(0xFF666661)
+val AuraTextMuted = Color(0xFF8A8A84)
 
-/** Slightly lifted asphalt, for pressed states and the text-field well. */
-val AsphaltLift = Color(0xFF2F3236)
+val AuraSafe = Color(0xFF2E7D5B)
+val AuraAttention = Color(0xFF8A5A00)
+val AuraRisk = Color(0xFFB42318)
+val AuraInfo = Color(0xFF2856A3)
 
-/** Kerb concrete: raised secondary surfaces (quiet rows, panels). */
-val KerbGrey = Color(0xFF3A3D42)
+// Dark (optional, §38): same language, no pure black, semantics preserved.
+val AuraDarkBackground = Color(0xFF1B1B1A)
+val AuraDarkSurface = Color(0xFF242423)
+val AuraDarkSurfaceMuted = Color(0xFF2E2E2C)
+val AuraDarkBorder = Color(0xFF3A3A37)
+val AuraDarkBorderStrong = Color(0xFF6A6A65)
+val AuraDarkText = Color(0xFFF2F2EF)
+val AuraDarkTextSecondary = Color(0xFFA9A9A3)
 
-/** Thermoplastic road-marking white: zebra bars and primary text. */
-val Paint = Color(0xFFF2F1EC)
-
-/** Worn paint: secondary text. Still AAA on asphalt. */
-val PaintDim = Color(0xFFC3C2BC)
-
-/** Signal amber: attention, focus, warnings, the tactile pad. */
-val SignalAmber = Color(0xFFFFB81C)
-
-/** Darker amber for text/strokes on light paint backgrounds (4.9:1 on Paint). */
-val SignalAmberDeep = Color(0xFF8A5A00)
-
-/** Signal red: critical stop alerts only. */
-val SignalRed = Color(0xFFC62A1F)
+val AuraDarkSafe = Color(0xFF5FBF8F)
+val AuraDarkAttention = Color(0xFFE0A23A)
+val AuraDarkRiskText = Color(0xFFF07A6E)
+val AuraDarkInfo = Color(0xFF8FB4F0)

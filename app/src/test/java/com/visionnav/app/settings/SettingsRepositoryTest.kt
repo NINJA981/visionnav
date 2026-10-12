@@ -61,7 +61,7 @@ class SettingsRepositoryTest {
         val repo = SettingsRepository(store)
         assertThat(repo.current()).isEqualTo(AppSettings())
         assertThat(repo.current().units).isEqualTo(DistanceUnits.METRIC)
-        assertThat(repo.current().themeMode).isEqualTo(ThemeMode.DARK)
+        assertThat(repo.current().themeMode).isEqualTo(ThemeMode.LIGHT)
         assertThat(repo.current().onboardingComplete).isFalse()
     }
 
@@ -150,7 +150,7 @@ class SettingsRepositoryTest {
         }
         val s = SettingsRepository(store).current()
         assertThat(s.verbosity).isEqualTo(Verbosity.STANDARD)
-        assertThat(s.themeMode).isEqualTo(ThemeMode.DARK)
+        assertThat(s.themeMode).isEqualTo(ThemeMode.LIGHT)
         assertThat(s.emergencyContacts).isEmpty()
     }
 }

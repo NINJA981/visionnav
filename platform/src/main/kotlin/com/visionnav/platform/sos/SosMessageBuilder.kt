@@ -14,7 +14,7 @@ import kotlin.math.roundToLong
  */
 object SosMessageBuilder {
 
-    private const val PREFIX = "VisionNav SOS: I need help."
+    private const val PREFIX = "AURA SOS: I need help."
     private const val NO_LOCATION = "$PREFIX My location: location unavailable."
 
     /** A fix older than this is labelled "last known … ago". */
@@ -25,7 +25,7 @@ object SosMessageBuilder {
      * @param fixAgeMs how old [fix] is (now − `fix.elapsedMs` on the same clock), if known.
      *   When ≥ [OLD_FIX_MS] the message says it is a last-known position and how old it is.
      *
-     * Example: `VisionNav SOS: I need help. My location:
+     * Example: `AURA SOS: I need help. My location:
      * https://www.openstreetmap.org/?mlat=13.082700&mlon=80.270700 (accuracy ~12 m)`
      */
     fun buildMessage(fix: LocationFix?, fixAgeMs: Long? = null): String {

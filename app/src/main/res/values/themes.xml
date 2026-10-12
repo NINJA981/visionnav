@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window theme only; Compose draws everything else (see ui/theme). Navy avoids a white flash at launch. -->
-    <style name="Theme.VisionNav" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/vn_navy</item>
-        <item name="android:colorBackground">@color/vn_navy</item>
-        <item name="android:colorAccent">@color/vn_amber</item>
+    <!-- Window theme only; Compose draws everything else (see ui/theme). Matches AURA's background to avoid a flash at launch. -->
+    <style name="Theme.VisionNav" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/aura_background</item>
+        <item name="android:colorBackground">@color/aura_background</item>
+        <item name="android:colorAccent">@color/aura_text</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

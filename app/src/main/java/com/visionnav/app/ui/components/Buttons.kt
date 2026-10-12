@@ -29,6 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -37,8 +40,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.bleed
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /** Minimum touch target for any control (spec: >= 72 dp). */
@@ -49,24 +50,29 @@ val PrimaryTouchTarget: Dp = 96.dp
 
 enum class ActionStyle { PRIMARY, SECONDARY, DANGER, QUIET }
 
-private data class ActionColors(val container: Color, val content: Color, val pressed: Color, val pressedContent: Color)
+private data class ActionColors(
+    val container: Color,
+    val content: Color,
+    val pressed: Color,
+    val outline: Color?,
+)
 
 /*
- * Street roles:
- *  SECONDARY = zebra bar (road paint on asphalt) — the everyday action.
- *  PRIMARY   = signal amber — the one thing a screen wants you to do next.
- *  QUIET     = kerb stone — navigation to other screens, settings.
- *  DANGER    = signal red — stop / emergency.
- * Pressing any bar flashes it amber, so a press is visible to low-vision users.
+ * AURA §28 roles:
+ *  PRIMARY   = solid neutral (dark) — the one main action on a screen.
+ *  SECONDARY = outline — normal actions.
+ *  QUIET     = list row (no box, divider below) — navigation to other screens, settings.
+ *  DANGER    = risk status treatment — SOS / stop.
+ * A press tints the control so it is visible to low-vision users; focus draws a thick info ring.
  */
 @Composable
 private fun colorsFor(style: ActionStyle): ActionColors {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     return when (style) {
-        ActionStyle.SECONDARY -> ActionColors(k.bar, k.onBar, k.amber, k.onAmber)
-        ActionStyle.PRIMARY -> ActionColors(k.amber, k.onAmber, k.bar, k.onBar)
-        ActionStyle.QUIET -> ActionColors(k.kerb, k.onKerb, k.amber, k.onAmber)
-        ActionStyle.DANGER -> ActionColors(k.red, k.onRed, k.amber, k.onAmber)
+        ActionStyle.PRIMARY -> ActionColors(aura.primary, aura.onPrimary, aura.primary.copy(alpha = 0.82f), null)
+        ActionStyle.SECONDARY -> ActionColors(aura.surface, aura.text, aura.surfaceMuted, aura.borderStrong)
+        ActionStyle.QUIET -> ActionColors(Color.Transparent, aura.text, aura.surfaceMuted, null)
+        ActionStyle.DANGER -> ActionColors(aura.risk, aura.onRisk, aura.risk.copy(alpha = 0.85f), null)
     }
 }
 
@@ -159,40 +165,48 @@ private fun ActionSurface(
     supportingText: String?,
 ) {
     val colors = colorsFor(style)
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val pressed by interaction.collectIsPressedAsState()
     val large = minHeight >= PrimaryTouchTarget
-    // Road paint has square ends; full-size bars run to the screen edge.
+    val quiet = style == ActionStyle.QUIET
+    val shape = if (quiet) RectangleShape else RoundedCornerShape(12.dp)
     var m = modifier
-        // Bars and kerbstones both run edge to edge; only the emergency button is a held object.
-        .then(if ((large && style != ActionStyle.DANGER) || style == ActionStyle.QUIET) Modifier.bleed() else Modifier)
         .fillMaxWidth()
         .heightIn(min = minHeight)
+        .clip(shape)
         .background(if (pressed) colors.pressed else colors.container)
-    if (focused) m = m.border(6.dp, k.amberInk)
+    if (colors.outline != null) m = m.border(1.5.dp, colors.outline, shape)
+    if (quiet) m = m.drawBehind {
+        drawLine(aura.border, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
+    }
+    if (focused) m = m.border(3.dp, aura.info, shape)
     m = m.then(clickModifier(interaction))
     if (stateDescription != null) m = m.semantics { this.stateDescription = stateDescription }
-    if (!enabled) m = m.alpha(0.5f)
+    if (!enabled) m = m.alpha(0.45f)
 
-    CompositionLocalProvider(LocalContentColor provides if (pressed) colors.pressedContent else colors.content) {
+    CompositionLocalProvider(LocalContentColor provides colors.content) {
         Row(
-            modifier = m.padding(horizontal = if (large || style == ActionStyle.QUIET) ScreenGutter + 8.dp else 20.dp, vertical = 18.dp),
+            modifier = m.padding(horizontal = if (quiet) 4.dp else 22.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            // Icons only where the shape itself is the warning (danger). Everywhere else the word is the label.
+            // AURA §29: icons support labels; only the emergency action carries one.
             if (icon != null && style == ActionStyle.DANGER) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(40.dp))
+                Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = text,
-                    style = if (large) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
+                    style = if (large) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium,
                 )
                 if (supportingText != null) {
-                    Text(text = supportingText, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = supportingText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (style == ActionStyle.SECONDARY || quiet) aura.textSecondary else LocalContentColor.current,
+                    )
                 }
             }
         }
@@ -214,7 +228,7 @@ fun LargeIconButton(
     var m = modifier
         .sizeIn(minWidth = MinTouchTarget, minHeight = MinTouchTarget)
         .clip(shape)
-    if (focused) m = m.border(5.dp, VisionNavTheme.kerb.amberInk, shape)
+    if (focused) m = m.border(5.dp, VisionNavTheme.aura.attention, shape)
     androidx.compose.foundation.layout.Box(
         modifier = m
             .clickable(

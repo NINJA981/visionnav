@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; Compose draws everything else (see ui/theme). Matches AURA's background to avoid a flash at launch. -->
+    <style name="Theme.VisionNav" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/aura_background_dark</item>
+        <item name="android:colorBackground">@color/aura_background_dark</item>
+        <item name="android:colorAccent">@color/aura_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

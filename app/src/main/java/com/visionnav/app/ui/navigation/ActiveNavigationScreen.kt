@@ -1,5 +1,8 @@
 package com.visionnav.app.ui.navigation
 
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,9 +44,8 @@ import com.visionnav.app.ui.components.VnScreen
 import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.NavigationUi
 import com.visionnav.app.ui.contract.UiAction
-import com.visionnav.app.ui.kerb.LaneProgress
-import com.visionnav.app.ui.kerb.RoadArrow
-import com.visionnav.app.ui.kerb.bleed
+import com.visionnav.app.ui.aura.ProgressLine
+import com.visionnav.app.ui.aura.RoadArrow
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 import kotlin.math.roundToInt
@@ -62,7 +64,7 @@ fun ActiveNavigationScreen(
 ) {
     KeepScreenOn()
     val nav = state.navigation
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     var confirmStop by rememberSaveable { mutableStateOf(false) }
 
     VnScreen(
@@ -84,19 +86,19 @@ fun ActiveNavigationScreen(
         DirectionSign(nav)
 
         nav.nextInstruction?.let {
-            Text(stringResource(R.string.nav_then, it), style = MaterialTheme.typography.titleLarge, color = k.onGroundDim)
+            Text(stringResource(R.string.nav_then, it), style = MaterialTheme.typography.titleLarge, color = aura.textSecondary)
         }
         nav.upcomingCrossingText?.let {
-            Text(it, style = MaterialTheme.typography.titleLarge, color = k.amberInk)
+            Text(it, style = MaterialTheme.typography.titleLarge, color = aura.text)
         }
 
         val percent = (nav.progressFraction.coerceIn(0f, 1f) * 100).roundToInt()
         Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            LaneProgress(
+            ProgressLine(
                 nav.progressFraction,
                 description = listOfNotNull(stringResource(R.string.nav_progress, percent), nav.remainingText).joinToString(". "),
             )
-            nav.remainingText?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim) }
+            nav.remainingText?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary) }
         }
         Spacer(Modifier.height(4.dp))
 
@@ -158,7 +160,7 @@ fun ActiveNavigationScreen(
 /** Arrow + distance on one line, instruction below: read like a finger-post sign. */
 @Composable
 private fun DirectionSign(nav: NavigationUi) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Column(
         Modifier
             .fillMaxWidth()
@@ -172,7 +174,7 @@ private fun DirectionSign(nav: NavigationUi) {
                 Text(
                     it,
                     style = MaterialTheme.typography.displayMedium,
-                    color = k.amberInk,
+                    color = aura.text,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
             }
@@ -185,28 +187,30 @@ private fun DirectionSign(nav: NavigationUi) {
     }
 }
 
-/** Off-route is a state change, not an emergency: an amber band, worded plainly. */
+/** Off-route is a state change, not an emergency (AURA "unusual"): calm surface, attention edge. */
 @Composable
 private fun OffRouteBand(nav: NavigationUi) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
+    val shape = RoundedCornerShape(12.dp)
     Row(
         Modifier
-            .bleed()
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .background(k.amber)
+            .clip(shape)
+            .background(aura.surface)
+            .border(1.5.dp, aura.borderStrong, shape)
             .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.width(10.dp).fillMaxHeight().background(k.onAmber))
+        Box(Modifier.width(6.dp).fillMaxHeight().background(aura.attention))
         Text(
             listOfNotNull(
                 stringResource(R.string.nav_off_route),
                 stringResource(R.string.nav_rerouting).takeIf { nav.isRerouting },
             ).joinToString(" "),
             style = MaterialTheme.typography.titleLarge,
-            color = k.onAmber,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            color = aura.text,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
         )
     }
 }

@@ -1,13 +1,14 @@
 package com.visionnav.app.ui.components
 
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import com.visionnav.app.ui.kerb.ChevronEdge
-import com.visionnav.app.ui.kerb.bleed
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -93,7 +94,7 @@ fun StatusLine(
     modifier: Modifier = Modifier,
     detail: String? = null,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val problem = level == StatusLevel.DEGRADED || level == StatusLevel.UNAVAILABLE
     Row(
         modifier = modifier
@@ -104,14 +105,14 @@ fun StatusLine(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(Modifier.weight(1f)) {
-            Text(text, style = MaterialTheme.typography.bodyLarge, color = k.onGround)
-            if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium, color = k.onGroundDim)
+            Text(text, style = MaterialTheme.typography.bodyLarge, color = aura.text)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium, color = aura.textSecondary)
         }
         if (level != null) {
             Text(
                 levelText(level),
                 style = MaterialTheme.typography.labelLarge,
-                color = if (problem) k.amberInk else k.onGroundDim,
+                color = if (problem) aura.attention else aura.textSecondary,
             )
         }
     }
@@ -198,13 +199,8 @@ fun StatusStrip(state: AppUiState, modifier: Modifier = Modifier) {
  */
 @Composable
 fun SafetyAlertBanner(alert: SafetyAlertUi, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val critical = alert.severity == SafetySeverity.CRITICAL
-    val (bg, fg) = when (alert.severity) {
-        SafetySeverity.CRITICAL -> k.red to k.onRed
-        SafetySeverity.WARNING, SafetySeverity.CAUTION -> k.amber to k.onAmber
-        SafetySeverity.INFO -> k.kerb to k.onKerb
-    }
     val label = stringResource(
         when (alert.severity) {
             SafetySeverity.CRITICAL -> R.string.alert_critical
@@ -214,55 +210,65 @@ fun SafetyAlertBanner(alert: SafetyAlertUi, onDismiss: () -> Unit, modifier: Mod
         },
     )
     val live = if (critical) LiveRegionMode.Assertive else LiveRegionMode.Polite
-    // A full-width signal band with a chevron edge, like a hazard board: unmistakable at a glance.
+    // AURA §11: the UI becomes visually urgent only when the situation is. Critical is a solid risk
+    // surface; everything else is a calm surface with a status edge and a status word.
+    val shape = RoundedCornerShape(12.dp)
+    val (bg, fg, edge) = when (alert.severity) {
+        SafetySeverity.CRITICAL -> Triple(aura.risk, aura.onRisk, null)
+        SafetySeverity.WARNING, SafetySeverity.CAUTION -> Triple(aura.surface, aura.text, aura.attention)
+        SafetySeverity.INFO -> Triple(aura.surface, aura.text, aura.info)
+    }
     Row(
         modifier
-            .bleed()
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .background(bg),
+            .clip(shape)
+            .background(bg)
+            .then(if (edge != null) Modifier.border(1.5.dp, aura.borderStrong, shape) else Modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ChevronEdge(fg, Modifier.width(28.dp).fillMaxHeight())
+        if (edge != null) Box(Modifier.width(6.dp).fillMaxHeight().background(edge))
         Column(
             Modifier
                 .weight(1f)
-                .padding(start = 16.dp, top = 14.dp, bottom = 14.dp)
+                .padding(start = 18.dp, top = 14.dp, bottom = 14.dp)
                 .semantics(mergeDescendants = true) { liveRegion = live },
         ) {
-            Text(label, style = MaterialTheme.typography.titleSmall, color = fg)
-            Text(alert.text, style = if (critical) MaterialTheme.typography.displaySmall else MaterialTheme.typography.headlineMedium, color = fg)
+            Text(label, style = MaterialTheme.typography.labelLarge, color = edge ?: fg)
+            Text(alert.text, style = if (critical) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.headlineSmall, color = fg)
         }
         LargeIconButton(Icons.Filled.Close, stringResource(R.string.alert_dismiss), onDismiss, tint = fg)
     }
 }
 
-/** Non-safety problems (network, permissions...). Polite live region. */
+/** Non-safety problems (network, permissions...). Calm surface, attention edge. Polite live region. */
 @Composable
 fun ErrorBanners(errors: List<ErrorBannerUi>, onDismiss: (Long) -> Unit, modifier: Modifier = Modifier) {
     if (errors.isEmpty()) return
-    val k = VisionNavTheme.kerb
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val aura = VisionNavTheme.aura
+    val shape = RoundedCornerShape(12.dp)
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         errors.forEach { error ->
             Row(
                 Modifier
-                    .bleed()
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .background(k.kerb),
+                    .clip(shape)
+                    .background(aura.surface)
+                    .border(1.5.dp, aura.borderStrong, shape),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.width(10.dp).fillMaxHeight().background(k.amber))
+                Box(Modifier.width(6.dp).fillMaxHeight().background(aura.attention))
                 Text(
                     error.text,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = k.onKerb,
+                    color = aura.text,
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 18.dp, top = 12.dp, bottom = 12.dp)
                         .semantics { liveRegion = LiveRegionMode.Polite },
                 )
-                LargeIconButton(Icons.Filled.Close, stringResource(R.string.error_dismiss), { onDismiss(error.id) }, tint = k.onKerb)
+                LargeIconButton(Icons.Filled.Close, stringResource(R.string.error_dismiss), { onDismiss(error.id) }, tint = aura.text)
             }
         }
     }

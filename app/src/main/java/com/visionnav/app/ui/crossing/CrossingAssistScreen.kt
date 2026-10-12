@@ -1,7 +1,6 @@
 package com.visionnav.app.ui.crossing
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -33,7 +28,7 @@ import com.visionnav.app.ui.components.TorchControl
 import com.visionnav.app.ui.components.VnScreen
 import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.UiAction
-import com.visionnav.app.ui.kerb.bleed
+import com.visionnav.app.ui.aura.StatusDot
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 import com.visionnav.core.crossing.CrossingAssistState
@@ -51,7 +46,7 @@ fun CrossingAssistScreen(
     onBack: () -> Unit,
 ) {
     KeepScreenOn()
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val crossing = state.crossing
     val endObservation = {
         onAction(UiAction.StopTrafficObservation)
@@ -65,32 +60,29 @@ fun CrossingAssistScreen(
         onBack = endObservation,
         pinned = { AlertArea(state, { onAction(UiAction.DismissAlert(it)) }, { onAction(UiAction.DismissError(it)) }) },
     ) {
-        // The crossing seen from the kerb. Amber stripes when the view is unclear (also said in words below).
-        ZebraBand(stripe = if (uncertain) k.amber else k.bar, ground = k.ground)
 
         Column(
             Modifier.fillMaxWidth().semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(
+            StatusDot(
                 crossing.stateText.ifBlank { stringResource(R.string.crossing_starting) },
-                style = MaterialTheme.typography.displaySmall,
-                color = if (uncertain) k.amberInk else k.onGround,
+                if (uncertain) aura.attention else aura.info,
                 modifier = Modifier.semantics { heading() },
             )
-            Text(stringResource(R.string.crossing_coverage), style = MaterialTheme.typography.titleLarge, color = k.onGroundDim)
+            Text(stringResource(R.string.crossing_coverage), style = MaterialTheme.typography.titleLarge, color = aura.textSecondary)
             // Only once a multi-part crossing has progressed; "first part of the road" at the start
             // could be heard as "you are on the road".
             if (crossing.stage in SHOWN_STAGES) {
-                Text(stringResource(R.string.crossing_stage, stageText(crossing.stage)), style = MaterialTheme.typography.titleMedium, color = k.onGroundDim)
+                Text(stringResource(R.string.crossing_stage, stageText(crossing.stage)), style = MaterialTheme.typography.titleMedium, color = aura.textSecondary)
             }
             if (crossing.userConfirmedAtCrossing) {
-                Text(stringResource(R.string.crossing_confirmed), style = MaterialTheme.typography.titleMedium, color = k.onGroundDim)
+                Text(stringResource(R.string.crossing_confirmed), style = MaterialTheme.typography.titleMedium, color = aura.textSecondary)
             }
         }
 
         crossing.contextText?.let {
-            Text(it, style = MaterialTheme.typography.headlineSmall, color = k.onGround)
+            Text(it, style = MaterialTheme.typography.headlineSmall, color = aura.text)
         }
 
         // Observation log: newest is largest; older lines step down in size and weight, not into boxes.
@@ -101,15 +93,15 @@ fun CrossingAssistScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (crossing.observations.isEmpty()) {
-                Text(stringResource(R.string.crossing_no_observations), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+                Text(stringResource(R.string.crossing_no_observations), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
             } else {
                 crossing.observations.take(6).forEachIndexed { i, line ->
-                    Text(line, style = observationStyle(i), color = if (i == 0) k.onGround else k.onGroundDim)
+                    Text(line, style = observationStyle(i), color = if (i == 0) aura.text else aura.textSecondary)
                 }
             }
         }
 
-        Text(stringResource(R.string.crossing_disclaimer), style = MaterialTheme.typography.bodyLarge, color = k.amberInk)
+        Text(stringResource(R.string.crossing_disclaimer), style = MaterialTheme.typography.titleMedium, color = aura.text)
         Spacer(Modifier.height(4.dp))
 
         if (!crossing.userConfirmedAtCrossing) {
@@ -138,23 +130,6 @@ fun CrossingAssistScreen(
 }
 
 private val SHOWN_STAGES = setOf(CrossingStage.REFUGE, CrossingStage.ROAD_SEGMENT_2, CrossingStage.UNKNOWN)
-
-/** Vertical zebra stripes, full bleed: the crossing as you face it from the kerb. Decorative. */
-@Composable
-private fun ZebraBand(stripe: Color, ground: Color) {
-    Canvas(
-        Modifier
-            .bleed()
-            .fillMaxWidth()
-            .height(96.dp)
-            .clearAndSetSemantics { },
-    ) {
-        drawRect(ground)
-        val n = 7
-        val w = size.width / (n * 2 - 1)
-        for (i in 0 until n) drawRect(stripe, Offset(i * 2 * w, 0f), Size(w, size.height))
-    }
-}
 
 @Composable
 private fun observationStyle(index: Int): TextStyle = when (index) {

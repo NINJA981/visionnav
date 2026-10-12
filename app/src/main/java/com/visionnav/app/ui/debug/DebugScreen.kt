@@ -27,7 +27,6 @@ import com.visionnav.app.ui.components.StatusStrip
 import com.visionnav.app.ui.components.VnScreen
 import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.UiAction
-import com.visionnav.app.ui.kerb.bleed
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 
@@ -43,11 +42,10 @@ fun DebugOverlay(
     // A camera view is a window, not a held object: square, edge to edge, on a kerbstone.
     Box(
         modifier
-            .bleed()
             .fillMaxWidth()
             .aspectRatio(3f / 4f)
             .clipToBounds()
-            .background(VisionNavTheme.kerb.kerb),
+            .background(VisionNavTheme.aura.surface),
         content = content,
     )
 }
@@ -57,7 +55,7 @@ fun BoxScope.DebugOverlayPlaceholder() {
     Text(
         stringResource(R.string.debug_overlay_placeholder),
         style = MaterialTheme.typography.bodyLarge,
-        color = VisionNavTheme.kerb.onKerb,
+        color = VisionNavTheme.aura.text,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .align(Alignment.Center)
@@ -89,7 +87,7 @@ fun DebugScreen(
             BodyText(stringResource(R.string.debug_log_count, state.debugLog.size))
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 state.debugLog.asReversed().take(100).forEach { line ->
-                    Text(line, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = VisionNavTheme.kerb.onGroundDim)
+                    Text(line, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = VisionNavTheme.aura.textSecondary)
                 }
             }
         }

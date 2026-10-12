@@ -19,7 +19,7 @@ class SosMessageBuilderTest {
     @Test
     fun `message with a fix has an OSM link and accuracy`() {
         assertThat(SosMessageBuilder.buildMessage(fix)).isEqualTo(
-            "VisionNav SOS: I need help. My location: " +
+            "AURA SOS: I need help. My location: " +
                 "https://www.openstreetmap.org/?mlat=13.082700&mlon=80.270700 (accuracy ~12 m)",
         )
     }
@@ -27,7 +27,7 @@ class SosMessageBuilderTest {
     @Test
     fun `message without a fix says location unavailable and has no coordinates`() {
         val msg = SosMessageBuilder.buildMessage(null)
-        assertThat(msg).isEqualTo("VisionNav SOS: I need help. My location: location unavailable.")
+        assertThat(msg).isEqualTo("AURA SOS: I need help. My location: location unavailable.")
         assertThat(msg).doesNotContain("mlat")
     }
 

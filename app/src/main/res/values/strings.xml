@@ -5,9 +5,9 @@
     empty and never tells the user to cross.
 -->
 <resources>
-    <string name="app_name">VisionNav</string>
+    <string name="app_name">AURA</string>
     <string name="app_tagline">Walking guidance by voice, vibration and camera</string>
-    <string name="loading">Loading VisionNav</string>
+    <string name="loading">Loading AURA</string>
 
     <!-- Common actions -->
     <string name="action_back">Back</string>
@@ -31,11 +31,11 @@
 
     <!-- Onboarding -->
     <string name="onboarding_step">Step %1$d of %2$d</string>
-    <string name="onboarding_welcome_title">Welcome to VisionNav</string>
-    <string name="onboarding_welcome_body">VisionNav guides you on foot by voice and vibration, and uses the phone camera to describe some of what is ahead.</string>
+    <string name="onboarding_welcome_title">Welcome to AURA</string>
+    <string name="onboarding_welcome_body">AURA guides you on foot by voice and vibration, and uses the phone camera to describe some of what is ahead.</string>
     <string name="onboarding_welcome_point_voice">Speak a command or use the large buttons. Every screen works with TalkBack, and alerts also vibrate.</string>
     <string name="onboarding_safety_title">Before you walk</string>
-    <string name="onboarding_safety_body">VisionNav adds information. It does not replace your cane, guide dog, hearing or orientation and mobility training.</string>
+    <string name="onboarding_safety_body">AURA adds information. It does not replace your cane, guide dog, hearing or orientation and mobility training.</string>
     <string name="onboarding_safety_ack">I understand</string>
     <string name="onboarding_hold_title">Holding the phone</string>
     <string name="onboarding_hold_body">Hold the phone upright at chest height, screen towards you, with the rear camera facing forward.</string>
@@ -48,15 +48,15 @@
     <string name="onboarding_grant">Allow</string>
     <string name="onboarding_grant_again">Ask again</string>
     <string name="onboarding_contacts_title">Emergency contacts</string>
-    <string name="onboarding_contacts_body">Optional. When you send an emergency message, VisionNav texts your location to these people.</string>
+    <string name="onboarding_contacts_body">Optional. When you send an emergency message, AURA texts your location to these people.</string>
     <string name="onboarding_finish">Finish setup</string>
     <string name="onboarding_skip_contacts">Skip for now</string>
 
     <!-- Safety statements (onboarding, About, crossing screen) -->
-    <string name="safety_never_decides">VisionNav never decides when you should cross a road. That decision is always yours.</string>
+    <string name="safety_never_decides">AURA never decides when you should cross a road. That decision is always yours.</string>
     <string name="safety_ahead_only">The camera sees only what is in front of the phone. It cannot see behind or beside you.</string>
     <string name="safety_may_miss">Detection can miss vehicles, people and obstacles, especially in low light, rain or glare.</string>
-    <string name="safety_silence">Silence from VisionNav does not mean nothing is there. Keep listening to your surroundings.</string>
+    <string name="safety_silence">Silence from AURA does not mean nothing is there. Keep listening to your surroundings.</string>
 
     <!-- Permissions -->
     <string name="perm_location_title">Location</string>
@@ -177,7 +177,7 @@
     <string name="preview_start">Start walking</string>
     <string name="preview_choose_again">Choose another place</string>
     <string name="preview_no_selection">No destination selected.</string>
-    <string name="preview_crossing_note">At each road crossing, stop and use Check traffic. VisionNav describes what the camera sees. You decide when to cross.</string>
+    <string name="preview_crossing_note">At each road crossing, stop and use Check traffic. AURA describes what the camera sees. You decide when to cross.</string>
 
     <!-- Active navigation -->
     <string name="nav_title">Navigating to %1$s</string>
@@ -204,7 +204,7 @@
 
     <!-- Crossing assist -->
     <string name="crossing_title">Traffic check</string>
-    <string name="crossing_disclaimer">VisionNav never decides when you should cross. That decision is always yours.</string>
+    <string name="crossing_disclaimer">AURA never decides when you should cross. That decision is always yours.</string>
     <string name="crossing_coverage">Camera sees ahead only.</string>
     <string name="crossing_status_heading">Observation</string>
     <string name="crossing_stage">Stage: %1$s</string>
@@ -218,7 +218,7 @@
     <string name="crossing_observations_heading">Latest observations</string>
     <string name="crossing_no_observations">No observations yet. Silence does not mean there is no traffic.</string>
     <string name="crossing_confirm">I\'m at the kerb</string>
-    <string name="crossing_confirm_hint">tell VisionNav you are standing at the kerb</string>
+    <string name="crossing_confirm_hint">tell AURA you are standing at the kerb</string>
     <string name="crossing_confirmed">Position confirmed at the crossing</string>
     <string name="crossing_next_segment">I\'m on the island</string>
     <string name="crossing_next_segment_hint">start a fresh check for the next part of the road</string>
@@ -283,11 +283,11 @@
     <!-- About -->
     <string name="about_title">About and safety</string>
     <string name="about_version">Version %1$s</string>
-    <string name="about_what_body">VisionNav is a walking assistant for blind and low-vision people. It combines walking routes, live camera descriptions, and spoken and vibrating alerts.</string>
+    <string name="about_what_body">AURA is a walking assistant for blind and low-vision people. It combines walking routes, live camera descriptions, and spoken and vibrating alerts.</string>
     <string name="about_safety_heading">Safety</string>
     <string name="about_limits_heading">What the camera cannot see</string>
     <string name="limit_not_detected">Stairs, doors and kerbs are not detected by the current model.</string>
-    <string name="limit_distance">VisionNav does not measure distances to objects. Near and far are rough estimates from the camera image.</string>
+    <string name="limit_distance">AURA does not measure distances to objects. Near and far are rough estimates from the camera image.</string>
     <string name="limit_signals">Pedestrian walk signals are not recognised.</string>
     <string name="limit_gps">GPS can be wrong by many metres, especially near tall buildings.</string>
     <string name="about_privacy_heading">Privacy</string>
@@ -312,11 +312,11 @@
     <string name="action_continue">Continue</string>
     <string name="action_not_now">Not now</string>
     <string name="action_remove">Remove</string>
-    <string name="onboarding_safety_describes">VisionNav describes what the camera can see.</string>
+    <string name="onboarding_safety_describes">AURA describes what the camera can see.</string>
     <string name="onboarding_safety_never">It never tells you when to cross. That decision is always yours.</string>
     <string name="onboarding_safety_miss">It can miss vehicles, people and obstacles, especially in low light, rain or glare.</string>
     <string name="onboarding_safety_replace">It does not replace your cane, guide dog, hearing, or orientation and mobility training.</string>
-    <string name="onboarding_permissions_later">You can change this later in the phone\'s Settings app, under Apps, VisionNav.</string>
+    <string name="onboarding_permissions_later">You can change this later in the phone\'s Settings app, under Apps, AURA.</string>
     <plurals name="sos_confirm_recipients">
         <item quantity="one">Your location goes by text message to %d emergency contact.</item>
         <item quantity="other">Your location goes by text message to %d emergency contacts.</item>
@@ -344,12 +344,12 @@
     <string name="credit_font">Typeface Atkinson Hyperlegible Next by the Braille Institute, SIL Open Font License 1.1.</string>
     <!-- Foreground service -->
     <string name="service_channel_name">Active guidance</string>
-    <string name="service_channel_description">Shown while VisionNav is guiding you or observing traffic.</string>
+    <string name="service_channel_description">Shown while AURA is guiding you or observing traffic.</string>
     <string name="service_text_navigating">Navigating. Camera and location in use.</string>
     <string name="service_text_crossing">Observing traffic. Camera sees ahead only.</string>
     <string name="service_text_exploring">Exploring. Obstacle alerts on.</string>
     <!-- Home (Kerb redesign) -->
-    <string name="home_pane_title">VisionNav home</string>
+    <string name="home_pane_title">AURA home</string>
     <string name="home_pad_speak">Speak</string>
     <string name="home_pad_listening">Listening</string>
     <string name="home_pad_hint">start listening for a command</string>
@@ -360,4 +360,12 @@
     <string name="home_go_somewhere">Go somewhere</string>
     <string name="home_repeat">Repeat</string>
     <string name="home_sos_hold">Hold for help</string>
+    <!-- AURA home -->
+    <string name="home_speak_examples">Say where you want to go, or ask where you are.</string>
+    <string name="home_listening_tap_stop">Tap to stop listening.</string>
+    <string name="home_state_ready">Ready</string>
+    <string name="home_state_on_route">On route</string>
+    <string name="home_state_traffic">Checking traffic</string>
+    <string name="home_state_exploring">Exploring</string>
+    <string name="home_state_attention">Needs attention</string>
 </resources>

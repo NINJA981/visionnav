@@ -93,7 +93,7 @@ data class NavigationUi(
     /** e.g. "Mapped crossing with signals in 60 metres". */
     val upcomingCrossingText: String? = null,
     /** Shape of the painted arrow for the next maneuver. Visual only; the instruction text carries meaning. */
-    val arrow: com.visionnav.app.ui.kerb.ArrowKind = com.visionnav.app.ui.kerb.ArrowKind.STRAIGHT,
+    val arrow: com.visionnav.app.ui.aura.ArrowKind = com.visionnav.app.ui.aura.ArrowKind.STRAIGHT,
 )
 
 data class CrossingUi(

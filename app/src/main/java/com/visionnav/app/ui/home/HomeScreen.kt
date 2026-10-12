@@ -2,6 +2,7 @@ package com.visionnav.app.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,10 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -41,15 +44,15 @@ import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.SessionMode
 import com.visionnav.app.ui.contract.StatusLevel
 import com.visionnav.app.ui.contract.UiAction
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.TactilePad
+import com.visionnav.app.ui.aura.ScreenGutter
+import com.visionnav.app.ui.aura.StatusDot
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /**
- * Home, read top to bottom the way a TalkBack user swipes: what state the phone is in, the voice
- * pad (the one big thing), the four everyday actions as zebra bars, then quieter destinations,
- * and SOS last so it is never hit by accident.
+ * Home, read top to bottom the way a TalkBack user swipes (AURA §08: where am I, what is happening,
+ * do I need to do something): state, the Speak action (the one primary), four everyday actions,
+ * a plain list of other places, and SOS last so it is never hit by accident.
  */
 @Composable
 fun HomeScreen(
@@ -64,11 +67,11 @@ fun HomeScreen(
     onOpenAbout: () -> Unit,
     onOpenDebug: () -> Unit,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val homeTitle = stringResource(R.string.home_pane_title)
-    val padHeight = (LocalConfiguration.current.screenHeightDp * 0.34f).dp.coerceAtLeast(220.dp)
+    val speakHeight = (LocalConfiguration.current.screenHeightDp * 0.18f).dp.coerceAtLeast(120.dp)
 
-    Surface(Modifier.fillMaxSize(), color = k.ground, contentColor = k.onGround) {
+    Surface(Modifier.fillMaxSize(), color = aura.background, contentColor = aura.text) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -78,45 +81,47 @@ fun HomeScreen(
                 .padding(start = ScreenGutter, end = ScreenGutter, top = 20.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            HomeHeader(state)
             StatusSentence(state)
             AlertArea(state, { onAction(UiAction.DismissAlert(it)) }, { onAction(UiAction.DismissError(it)) })
 
-            TactilePad(
-                label = stringResource(if (state.isListening) R.string.home_pad_listening else R.string.home_pad_speak),
-                hint = stringResource(if (state.isListening) R.string.home_pad_hint_stop else R.string.home_pad_hint),
-                listening = state.isListening,
-                stateText = if (state.isListening) stringResource(R.string.home_listening_state) else null,
+            BigActionButton(
+                text = stringResource(if (state.isListening) R.string.home_pad_listening else R.string.home_pad_speak),
+                supportingText = stringResource(if (state.isListening) R.string.home_listening_tap_stop else R.string.home_speak_examples),
                 onClick = { onAction(if (state.isListening) UiAction.StopVoiceCommand else UiAction.StartVoiceCommand) },
-                modifier = Modifier.height(padHeight),
+                onClickLabel = stringResource(if (state.isListening) R.string.home_pad_hint_stop else R.string.home_pad_hint),
+                stateDescription = if (state.isListening) stringResource(R.string.home_listening_state) else null,
+                style = ActionStyle.PRIMARY,
+                minHeight = speakHeight,
             )
             state.voiceTranscript?.let {
                 Text(
                     stringResource(R.string.home_heard, it),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = k.onGroundDim,
+                    color = aura.textSecondary,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
 
-            // An active session is the next thing you want: one amber bar back into it.
+            // An active session is the next thing you want: a way straight back into it.
             val navigation = state.navigation
             when {
                 navigation != null && state.sessionMode == SessionMode.NAVIGATING -> BigActionButton(
                     text = stringResource(R.string.home_back_to_route),
                     supportingText = navigation.destinationName,
                     onClick = onOpenNavigation,
-                    style = ActionStyle.PRIMARY,
+                    style = ActionStyle.SECONDARY,
                 )
                 state.sessionMode == SessionMode.CROSSING_ASSIST -> BigActionButton(
                     text = stringResource(R.string.home_back_to_traffic),
                     supportingText = state.crossing.stateText.ifBlank { null },
                     onClick = onOpenCrossing,
-                    style = ActionStyle.PRIMARY,
+                    style = ActionStyle.SECONDARY,
                 )
                 state.sessionMode == SessionMode.EXPLORING -> BigActionButton(
                     text = stringResource(R.string.home_explore_stop),
                     onClick = { onAction(UiAction.StopExploring) },
-                    style = ActionStyle.PRIMARY,
+                    style = ActionStyle.SECONDARY,
                 )
                 else -> Unit
             }
@@ -149,8 +154,8 @@ fun HomeScreen(
             }
             Spacer(Modifier.height(10.dp))
 
-            // Kerbstones: one continuous edge with thin joints.
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            // A plain list: rows separated by dividers (AURA: borders over boxes).
+            Column(Modifier.fillMaxWidth()) {
                 state.lastSpoken?.let { said ->
                     BigActionButton(
                         text = stringResource(R.string.home_repeat),
@@ -182,10 +187,31 @@ fun HomeScreen(
     }
 }
 
+/** AURA §09 header: wordmark and the one state the user needs, as a dot and a word. */
+@Composable
+private fun HomeHeader(state: AppUiState) {
+    val aura = VisionNavTheme.aura
+    val (word, color) = when {
+        state.safetyAlert != null -> stringResource(R.string.home_state_attention) to aura.risk
+        state.sessionMode == SessionMode.NAVIGATING -> stringResource(R.string.home_state_on_route) to aura.safe
+        state.sessionMode == SessionMode.CROSSING_ASSIST -> stringResource(R.string.home_state_traffic) to aura.info
+        state.sessionMode == SessionMode.EXPLORING -> stringResource(R.string.home_state_exploring) to aura.info
+        else -> stringResource(R.string.home_state_ready) to aura.safe
+    }
+    Row(
+        Modifier.fillMaxWidth().semantics(mergeDescendants = true) { heading() },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineLarge, color = aura.text)
+        StatusDot(word, color)
+    }
+}
+
 /** One sentence about the phone's senses. Problems are worded differently and set in amber. */
 @Composable
 private fun StatusSentence(state: AppUiState) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val parts = buildList {
         add(state.gps.text.ifBlank { stringResource(R.string.status_location_unknown) })
         add(state.camera.text.ifBlank { stringResource(R.string.status_level_off) })
@@ -196,7 +222,7 @@ private fun StatusSentence(state: AppUiState) {
     Text(
         parts.joinToString(". ", postfix = "."),
         style = MaterialTheme.typography.bodyLarge,
-        color = if (problem) k.amberInk else k.onGroundDim,
+        color = if (problem) aura.attention else aura.textSecondary,
     )
 }
 

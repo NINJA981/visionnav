@@ -54,12 +54,11 @@ import com.visionnav.app.settings.EmergencyContact
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.BigActionButton
 import com.visionnav.app.ui.components.EmergencyContactsEditor
-import com.visionnav.app.ui.components.KerbstoneGroup
+import com.visionnav.app.ui.components.ListGroup
 import com.visionnav.app.ui.components.LargeIconButton
 import com.visionnav.app.ui.components.MinTouchTarget
-import com.visionnav.app.ui.kerb.LaneProgress
-import com.visionnav.app.ui.kerb.ScreenGutter
-import com.visionnav.app.ui.kerb.bleed
+import com.visionnav.app.ui.aura.ProgressLine
+import com.visionnav.app.ui.aura.ScreenGutter
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 private const val PAGE_COUNT = 5
@@ -105,7 +104,7 @@ fun OnboardingScreen(
     onFinished: () -> Unit,
     startPage: Int = 0,
 ) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     var page by rememberSaveable { mutableIntStateOf(startPage) }
     BackHandler(enabled = page > 0) { page-- }
     val next = { page = (page + 1).coerceAtMost(PAGE_COUNT - 1) }
@@ -122,7 +121,7 @@ fun OnboardingScreen(
     val scroll = rememberScrollState()
     LaunchedEffect(page) { scroll.scrollTo(0) }
 
-    Surface(Modifier.fillMaxSize(), color = k.ground, contentColor = k.onGround) {
+    Surface(Modifier.fillMaxSize(), color = aura.background, contentColor = aura.text) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -141,7 +140,7 @@ fun OnboardingScreen(
                 if (page > 0) {
                     LargeIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back), { page-- })
                 }
-                LaneProgress(
+                ProgressLine(
                     fraction = (page + 1f) / PAGE_COUNT,
                     description = stringResource(R.string.onboarding_step, page + 1, PAGE_COUNT),
                     modifier = Modifier.weight(1f),
@@ -165,9 +164,9 @@ fun OnboardingScreen(
 
 @Composable
 private fun WelcomePage(onNext: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Text(stringResource(R.string.onboarding_welcome_body), style = leadStyle())
-    Text(stringResource(R.string.onboarding_welcome_point_voice), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+    Text(stringResource(R.string.onboarding_welcome_point_voice), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
     Spacer(Modifier.height(8.dp))
     BigActionButton(stringResource(R.string.action_continue), onNext, style = ActionStyle.PRIMARY)
 }
@@ -175,26 +174,26 @@ private fun WelcomePage(onNext: () -> Unit) {
 /** The most important page in the app: what VisionNav does, and what it never does. */
 @Composable
 private fun SafetyPage(onNext: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Text(stringResource(R.string.onboarding_safety_describes), style = leadStyle())
     Text(
         stringResource(R.string.onboarding_safety_never),
         style = MaterialTheme.typography.displaySmall,
-        color = k.amberInk,
+        color = aura.attention,
     )
     Text(stringResource(R.string.onboarding_safety_miss), style = leadStyle())
     Text(stringResource(R.string.onboarding_safety_replace), style = leadStyle())
-    Text(stringResource(R.string.safety_silence), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+    Text(stringResource(R.string.safety_silence), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
     Spacer(Modifier.height(8.dp))
     BigActionButton(stringResource(R.string.onboarding_safety_ack), onNext, style = ActionStyle.PRIMARY)
 }
 
 @Composable
 private fun HoldPhonePage(onNext: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Text(stringResource(R.string.onboarding_hold_body), style = leadStyle())
     listOf(R.string.hold_point_mount, R.string.hold_point_steady, R.string.hold_point_lens, R.string.hold_point_audio).forEach {
-        Text(stringResource(it), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+        Text(stringResource(it), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
     }
     Spacer(Modifier.height(8.dp))
     BigActionButton(stringResource(R.string.action_continue), onNext, style = ActionStyle.PRIMARY)
@@ -202,7 +201,7 @@ private fun HoldPhonePage(onNext: () -> Unit) {
 
 @Composable
 private fun PermissionsPage(onNext: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val context = LocalContext.current
     val inPreview = LocalInspectionMode.current
     val items = remember { permissionItems() }
@@ -217,7 +216,7 @@ private fun PermissionsPage(onNext: () -> Unit) {
     val ask = { launcher.launch(items.flatMap { it.permissions }.toTypedArray()) }
 
     Text(stringResource(R.string.onboarding_permissions_body), style = leadStyle())
-    KerbstoneGroup {
+    ListGroup {
         items.forEachIndexed { i, item ->
             val granted = grantedFlags[i]
             // Status is shown once it is known; "Not allowed" is a different word and amber.
@@ -247,31 +246,30 @@ private fun PermissionsPage(onNext: () -> Unit) {
         }
     }
     if (requested > 0 && !allGranted) {
-        Text(stringResource(R.string.onboarding_permissions_later), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+        Text(stringResource(R.string.onboarding_permissions_later), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
     }
 }
 
 /** One permission on a kerbstone: name, what it is for, and its state as a word. */
 @Composable
 private fun PermissionStone(title: String, body: String, status: String?, problem: Boolean) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     Row(
         Modifier
-            .bleed()
             .fillMaxWidth()
             .heightIn(min = MinTouchTarget)
-            .background(k.kerb)
+            .background(aura.surface)
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = ScreenGutter + 8.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, color = k.onKerb)
-            Text(body, style = MaterialTheme.typography.bodyMedium, color = k.onKerb)
+            Text(title, style = MaterialTheme.typography.titleMedium, color = aura.text)
+            Text(body, style = MaterialTheme.typography.bodyMedium, color = aura.text)
         }
         if (status != null) {
-            Text(status, style = MaterialTheme.typography.labelLarge, color = if (problem) k.amberInk else k.onKerb)
+            Text(status, style = MaterialTheme.typography.labelLarge, color = if (problem) aura.attention else aura.text)
         }
     }
 }

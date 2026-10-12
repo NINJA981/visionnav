@@ -21,7 +21,7 @@ import com.visionnav.app.settings.ThemeMode
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.BigActionButton
 import com.visionnav.app.ui.components.EmergencyContactsEditor
-import com.visionnav.app.ui.components.KerbstoneGroup
+import com.visionnav.app.ui.components.ListGroup
 import com.visionnav.app.ui.components.MinTouchTarget
 import com.visionnav.app.ui.components.RadioGroup
 import com.visionnav.app.ui.components.RadioOption
@@ -102,7 +102,7 @@ fun SettingsScreen(
         )
 
         Group(stringResource(R.string.settings_alerts))
-        KerbstoneGroup {
+        ListGroup {
             ToggleRow(
                 title = stringResource(R.string.settings_haptics),
                 description = stringResource(R.string.settings_haptics_desc),
@@ -150,7 +150,7 @@ fun SettingsScreen(
         )
 
         Group(stringResource(R.string.settings_developer))
-        KerbstoneGroup {
+        ListGroup {
             ToggleRow(
                 title = stringResource(R.string.settings_debug),
                 description = stringResource(R.string.settings_debug_desc),
@@ -180,7 +180,7 @@ private fun SubLabel(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.titleMedium,
-        color = VisionNavTheme.kerb.onGroundDim,
+        color = VisionNavTheme.aura.textSecondary,
         modifier = Modifier.semantics { heading() },
     )
 }

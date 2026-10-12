@@ -21,14 +21,14 @@ import com.visionnav.app.ui.theme.VisionNavTheme
  */
 @Composable
 fun AboutScreen(versionName: String, onBack: () -> Unit) {
-    val k = VisionNavTheme.kerb
+    val aura = VisionNavTheme.aura
     val lead = MaterialTheme.typography.bodyLarge.copy(fontSize = 26.sp, lineHeight = 36.sp)
     VnScreen(title = stringResource(R.string.about_title), onBack = onBack) {
         Text(stringResource(R.string.about_what_body), style = lead)
         Text(stringResource(R.string.onboarding_safety_body), style = MaterialTheme.typography.bodyLarge)
 
         Section(R.string.about_safety_heading)
-        Text(stringResource(R.string.safety_never_decides), style = MaterialTheme.typography.headlineSmall, color = k.amberInk)
+        Text(stringResource(R.string.safety_never_decides), style = MaterialTheme.typography.headlineSmall, color = aura.attention)
         Paragraphs(R.string.safety_may_miss, R.string.safety_silence)
 
         Section(R.string.about_limits_heading)
@@ -56,7 +56,7 @@ fun AboutScreen(versionName: String, onBack: () -> Unit) {
         )
 
         Spacer(Modifier.height(12.dp))
-        Text(stringResource(R.string.about_version, versionName), style = MaterialTheme.typography.bodyLarge, color = k.onGroundDim)
+        Text(stringResource(R.string.about_version, versionName), style = MaterialTheme.typography.bodyLarge, color = aura.textSecondary)
     }
 }
 

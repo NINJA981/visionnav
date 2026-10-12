@@ -37,7 +37,7 @@ import com.visionnav.core.announce.AudioQueueManager
 import com.visionnav.core.announce.SafetyPhraseGuard
 import com.visionnav.core.common.UncertaintyReason
 import com.visionnav.core.crossing.CrossingAssistState
-import com.visionnav.app.ui.kerb.ArrowKind
+import com.visionnav.app.ui.aura.ArrowKind
 import com.visionnav.core.navigation.DirectionStyle
 import com.visionnav.core.navigation.ManeuverType
 import com.visionnav.core.navigation.NavigationPhrases

@@ -33,7 +33,7 @@ data class AppSettings(
     val hapticsOnly: Boolean = false,
     val autoTorchInLowLight: Boolean = false,
     val units: DistanceUnits = DistanceUnits.METRIC,
-    val themeMode: ThemeMode = ThemeMode.DARK,
+    val themeMode: ThemeMode = ThemeMode.LIGHT,
     val emergencyContacts: List<EmergencyContact> = emptyList(),
     val debugOverlay: Boolean = false,
     val experimentalFeatures: Boolean = false,
