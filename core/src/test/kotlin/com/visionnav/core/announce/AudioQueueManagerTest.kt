@@ -71,8 +71,45 @@ class AudioQueueManagerTest {
         speaker.finish()
         time.advance(1_000)
         val r = m.submit(obs("Vehicle moving away.", key = "t2"))
-        assertThat(r).isEqualTo(SubmitResult.Dropped(AnnouncementPolicy.DropReason.AMBIENT_RATE_LIMIT))
+        // Held back, not spoken inside the 2.5 s ambient window.
+        assertThat(r).isEqualTo(SubmitResult.Queued)
+        m.tick()
         assertThat(speaker.spokenTexts).containsExactly("Vehicle approaching.")
+    }
+
+    @Test
+    fun `rate limited observation is spoken once the ambient window passes`() {
+        val m = manager()
+        m.submit(obs("Vehicle approaching.", key = "t1"))
+        speaker.finish()
+        time.advance(1_000)
+        m.submit(obs("Vehicle moving away.", key = "t2", ttl = 4_000))
+        time.advance(1_600)
+        m.tick()
+        assertThat(speaker.spokenTexts).containsExactly("Vehicle approaching.", "Vehicle moving away.").inOrder()
+    }
+
+    @Test
+    fun `rate limited observation expires instead of being spoken late`() {
+        val m = manager()
+        m.submit(obs("Vehicle approaching.", key = "t1"))
+        speaker.finish()
+        time.advance(1_000)
+        m.submit(obs("Vehicle moving away.", key = "t2", ttl = 1_000))
+        time.advance(1_600)
+        m.tick()
+        assertThat(speaker.spokenTexts).containsExactly("Vehicle approaching.")
+        assertThat(m.history.value.map { it.outcome }).contains(AudioOutcome.EXPIRED)
+    }
+
+    @Test
+    fun `rate limited observation is dropped when deferral is disabled`() {
+        val m = AudioQueueManager(speaker, earcons, haptics, time, SafetyPhraseGuard(), AnnouncementPolicy(time), config = AudioQueueConfig(deferAmbientRateLimited = false))
+        m.submit(obs("Vehicle approaching.", key = "t1"))
+        speaker.finish()
+        time.advance(1_000)
+        val r = m.submit(obs("Vehicle moving away.", key = "t2"))
+        assertThat(r).isEqualTo(SubmitResult.Dropped(AnnouncementPolicy.DropReason.AMBIENT_RATE_LIMIT))
     }
 
     // --- Test 22 & preemption --------------------------------------------------------------

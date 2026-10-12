@@ -16,5 +16,5 @@ abstract class UiBindingsModule {
 
     @Binds
     @Singleton
-    abstract fun bindAppController(impl: FakeAppController): AppController
+    abstract fun bindAppController(impl: com.visionnav.app.integration.EngineAppController): AppController
 }

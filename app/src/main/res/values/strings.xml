@@ -327,4 +327,10 @@
     <string name="debug_log_heading">Session log</string>
     <string name="debug_log_empty">No log entries yet.</string>
     <string name="debug_log_count">%1$d entries, newest first</string>
+    <!-- Foreground service -->
+    <string name="service_channel_name">Active guidance</string>
+    <string name="service_channel_description">Shown while VisionNav is guiding you or observing traffic.</string>
+    <string name="service_text_navigating">Navigating. Camera and location in use.</string>
+    <string name="service_text_crossing">Observing traffic. Camera sees ahead only.</string>
+    <string name="service_text_exploring">Exploring. Obstacle alerts on.</string>
 </resources>

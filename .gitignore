@@ -12,3 +12,5 @@ build/
 /tools/model/*.pt
 /tools/model/out/
 .claude/
+hs_err_pid*.log
+replay_pid*.log

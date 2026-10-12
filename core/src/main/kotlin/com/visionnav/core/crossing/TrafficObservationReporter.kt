@@ -100,7 +100,9 @@ class TrafficObservationReporter(
             CrossingAssistState.OBSERVING_TRAFFIC, CrossingAssistState.OBSERVATION_UNCERTAIN -> when (e.cause) {
                 TransitionCause.OBSERVATION_STARTED, TransitionCause.SEGMENT_STARTED -> {
                     beginObservation(now)
-                    emit(out, CrossingPhrases.OBSERVING, AnnouncementPriority.OBSERVATION, KEY_OBSERVING, now, config.observationCooldownMs, earcon = Earcon.OBSERVATION_START)
+                    // Confirms a user request (like "where am I"), so it is NAVIGATION priority: it must not
+                    // consume the ambient rate-limit budget and delay the first real traffic observation.
+                    emit(out, CrossingPhrases.OBSERVING, AnnouncementPriority.NAVIGATION, KEY_OBSERVING, now, config.observationCooldownMs, earcon = Earcon.OBSERVATION_START)
                     if (e.context != null) {
                         emit(out, roadPhrase(e.context, orientation), AnnouncementPriority.NAVIGATION, KEY_CONTEXT_ROAD, now, config.contextCooldownMs)
                     }

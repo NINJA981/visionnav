@@ -31,6 +31,14 @@ data class AudioQueueConfig(
     val criticalMinTtlMs: Long = 3_000L,
     val requeueOnPreempt: Set<AnnouncementPriority> = setOf(AnnouncementPriority.NAVIGATION),
     val historySize: Int = 100,
+    /**
+     * When true, an announcement rejected **only** by the global ambient rate limit is held (within
+     * its TTL) and released once the limit allows, instead of being dropped. Producers such as the
+     * traffic reporter deduplicate on their side and never resend a state they believe was announced,
+     * so dropping here would silently lose a fresh observation.
+     */
+    val deferAmbientRateLimited: Boolean = true,
+    val maxDeferred: Int = 3,
 )
 
 /** What happened to an announcement. Used in [AudioLogEntry] for the debug/session log. */
@@ -44,6 +52,8 @@ enum class AudioOutcome {
     REQUEUED,
     /** Waited longer than its TTL and was discarded unspoken. */
     EXPIRED,
+    /** Held back by the ambient rate limit; it will be released when the limit allows (or expire). */
+    DEFERRED,
     /** Rejected by [AnnouncementPolicy] (verbosity, cooldown, rate limit). */
     DROPPED_BY_POLICY,
     /** Rejected by [SafetyPhraseGuard]. This is a **defect** in a phrase generator. */
@@ -130,6 +140,7 @@ class AudioQueueManager(
 
     private val lock = Any()
     private val queue = ArrayList<Entry>()
+    private val deferred = ArrayList<Entry>()
     private var inFlight: Entry? = null
     private var inFlightUtteranceId: String? = null
     private var seqCounter = 0L
@@ -205,6 +216,9 @@ class AudioQueueManager(
     /** Call when the TTS engine finishes initialising so held items can be spoken. */
     fun onSpeakerReady() = transact { pumpLocked() }
 
+    /** Call periodically (e.g. every 500 ms) so rate-limited items are released on time. */
+    fun tick() = transact { pumpLocked() }
+
     // ---------------------------------------------------------------------------------------
     // Internals. Everything named *Locked runs under [lock].
     // ---------------------------------------------------------------------------------------
@@ -249,6 +263,9 @@ class AudioQueueManager(
         if (!bypassPolicy) {
             val decision = policy.admit(a)
             if (decision is AnnouncementPolicy.Decision.Drop) {
+                if (decision.reason == AnnouncementPolicy.DropReason.AMBIENT_RATE_LIMIT && config.deferAmbientRateLimited && !muted) {
+                    return deferLocked(a, now)
+                }
                 logLocked(a, AudioOutcome.DROPPED_BY_POLICY, decision.reason.name)
                 return SubmitResult.Dropped(decision.reason)
             }
@@ -299,6 +316,44 @@ class AudioQueueManager(
         return SubmitResult.Queued
     }
 
+    private fun deferLocked(a: Announcement, now: Long): SubmitResult {
+        val origin = if (a.createdAtMs in 1..now) a.createdAtMs else now
+        deferred.filter { it.announcement.dedupeKey == a.dedupeKey }.forEach {
+            deferred.remove(it)
+            logLocked(it.announcement, AudioOutcome.REPLACED)
+        }
+        deferred.add(Entry(a, seqCounter++, origin))
+        while (deferred.size > config.maxDeferred) {
+            val oldest = deferred.minBy { it.seq }
+            deferred.remove(oldest)
+            logLocked(oldest.announcement, AudioOutcome.QUEUE_OVERFLOW)
+        }
+        logLocked(a, AudioOutcome.DEFERRED)
+        return SubmitResult.Queued
+    }
+
+    /** Moves at most one deferred item into the queue once the ambient limit allows it. */
+    private fun releaseDeferredLocked(now: Long) {
+        val it = deferred.iterator()
+        while (it.hasNext()) {
+            val e = it.next()
+            if (isExpired(e, now)) {
+                it.remove()
+                logLocked(e.announcement, AudioOutcome.EXPIRED)
+            }
+        }
+        if (deferred.isEmpty() || now < policy.ambientAvailableAtMs()) return
+        val next = deferred.minWith(compareByDescending<Entry> { it.rank }.thenBy { it.seq })
+        deferred.remove(next)
+        when (val d = policy.admit(next.announcement)) {
+            AnnouncementPolicy.Decision.Accept -> {
+                queue.add(next)
+                enforceCapLocked(next.announcement.priority)
+            }
+            is AnnouncementPolicy.Decision.Drop -> logLocked(next.announcement, AudioOutcome.DROPPED_BY_POLICY, d.reason.name)
+        }
+    }
+
     private fun preemptLocked(current: Entry, now: Long) {
         inFlight = null
         inFlightUtteranceId = null
@@ -325,6 +380,7 @@ class AudioQueueManager(
     private fun pumpLocked() {
         if (inFlight != null || muted || !speaker.isReady) return
         val now = time.elapsedMs()
+        releaseDeferredLocked(now)
         purgeExpiredLocked(now)
         val next = queue.maxWithOrNull(compareBy<Entry> { it.rank }.thenByDescending { it.seq }) ?: return
         queue.remove(next)
@@ -401,6 +457,8 @@ class AudioQueueManager(
         }
         for (e in queue) logLocked(e.announcement, AudioOutcome.CLEARED)
         queue.clear()
+        for (e in deferred) logLocked(e.announcement, AudioOutcome.CLEARED)
+        deferred.clear()
     }
 
     private fun logLocked(a: Announcement, outcome: AudioOutcome, detail: String? = null) {

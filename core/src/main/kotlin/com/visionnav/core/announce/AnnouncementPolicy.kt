@@ -99,6 +99,11 @@ class AnnouncementPolicy(
         lastAmbientMs = null
     }
 
+    /** Earliest time at which an OBSERVATION/INFO announcement can pass the global ambient limit. */
+    fun ambientAvailableAtMs(): Long = synchronized(lock) {
+        lastAmbientMs?.let { it + config.ambientMinIntervalMs } ?: Long.MIN_VALUE
+    }
+
     fun isImportant(a: Announcement): Boolean =
         a.dedupeKey in config.importantKeys || config.importantKeyPrefixes.any { a.dedupeKey.startsWith(it) }
 
