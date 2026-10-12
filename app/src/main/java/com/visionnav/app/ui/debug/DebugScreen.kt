@@ -1,21 +1,20 @@
 package com.visionnav.app.ui.debug
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -28,11 +27,12 @@ import com.visionnav.app.ui.components.StatusStrip
 import com.visionnav.app.ui.components.VnScreen
 import com.visionnav.app.ui.contract.AppUiState
 import com.visionnav.app.ui.contract.UiAction
+import com.visionnav.app.ui.kerb.bleed
 import com.visionnav.app.ui.preview.PreviewSamples
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /**
- * Container for the camera preview + detection boxes. The integrator passes the real overlay
+ * Slot for the camera preview + detection boxes. The integrator passes the real overlay
  * (CameraX PreviewView + box Canvas) as [content]; the 3:4 frame matches portrait analysis.
  */
 @Composable
@@ -40,16 +40,16 @@ fun DebugOverlay(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit = { DebugOverlayPlaceholder() },
 ) {
-    Surface(
-        modifier = modifier
+    // A camera view is a window, not a held object: square, edge to edge, on a kerbstone.
+    Box(
+        modifier
+            .bleed()
             .fillMaxWidth()
-            .aspectRatio(3f / 4f),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
-    ) {
-        Box(Modifier.fillMaxSize(), content = content)
-    }
+            .aspectRatio(3f / 4f)
+            .clipToBounds()
+            .background(VisionNavTheme.kerb.kerb),
+        content = content,
+    )
 }
 
 @Composable
@@ -57,6 +57,7 @@ fun BoxScope.DebugOverlayPlaceholder() {
     Text(
         stringResource(R.string.debug_overlay_placeholder),
         style = MaterialTheme.typography.bodyLarge,
+        color = VisionNavTheme.kerb.onKerb,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .align(Alignment.Center)
@@ -86,9 +87,9 @@ fun DebugScreen(
             BodyText(stringResource(R.string.debug_log_empty))
         } else {
             BodyText(stringResource(R.string.debug_log_count, state.debugLog.size))
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 state.debugLog.asReversed().take(100).forEach { line ->
-                    Text(line, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
+                    Text(line, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = VisionNavTheme.kerb.onGroundDim)
                 }
             }
         }

@@ -1,10 +1,16 @@
 package com.visionnav.app.ui.settings
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.School
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.visionnav.app.R
 import com.visionnav.app.settings.AppSettings
 import com.visionnav.app.settings.DirectionStyle
@@ -15,6 +21,7 @@ import com.visionnav.app.settings.ThemeMode
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.BigActionButton
 import com.visionnav.app.ui.components.EmergencyContactsEditor
+import com.visionnav.app.ui.components.KerbstoneGroup
 import com.visionnav.app.ui.components.MinTouchTarget
 import com.visionnav.app.ui.components.RadioGroup
 import com.visionnav.app.ui.components.RadioOption
@@ -26,6 +33,12 @@ import com.visionnav.app.ui.theme.VisionNavTheme
 import com.visionnav.core.announce.Verbosity
 import java.util.Locale
 
+private const val EPS = 0.001f
+
+/**
+ * Settings in plain-language groups. Every row is a kerbstone whose state is a written word;
+ * there are no Material switches, sliders or radio dots.
+ */
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
@@ -36,8 +49,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     VnScreen(title = stringResource(R.string.settings_title), onBack = onBack) {
-        SectionHeading(stringResource(R.string.settings_speech))
-        SectionLabel(stringResource(R.string.settings_verbosity))
+        Group(stringResource(R.string.settings_speech), first = true)
+        SubLabel(stringResource(R.string.settings_verbosity))
         RadioGroup(
             options = listOf(
                 RadioOption(Verbosity.MINIMAL, stringResource(R.string.verbosity_minimal), stringResource(R.string.verbosity_minimal_desc)),
@@ -50,17 +63,26 @@ fun SettingsScreen(
         StepperRow(
             title = stringResource(R.string.settings_rate),
             valueText = stringResource(R.string.settings_value_times, format1(settings.speechRate)),
+            decreaseText = stringResource(R.string.settings_rate_slower),
+            increaseText = stringResource(R.string.settings_rate_faster),
             onDecrease = { onUpdate { it.copy(speechRate = SettingsRepository.clampSpeech(it.speechRate - AppSettings.SPEECH_STEP)) } },
             onIncrease = { onUpdate { it.copy(speechRate = SettingsRepository.clampSpeech(it.speechRate + AppSettings.SPEECH_STEP)) } },
+            canDecrease = settings.speechRate > AppSettings.SPEECH_MIN + EPS,
+            canIncrease = settings.speechRate < AppSettings.SPEECH_MAX - EPS,
         )
         StepperRow(
             title = stringResource(R.string.settings_pitch),
             valueText = stringResource(R.string.settings_value_times, format1(settings.speechPitch)),
+            decreaseText = stringResource(R.string.settings_pitch_lower),
+            increaseText = stringResource(R.string.settings_pitch_higher),
             onDecrease = { onUpdate { it.copy(speechPitch = SettingsRepository.clampSpeech(it.speechPitch - AppSettings.SPEECH_STEP)) } },
             onIncrease = { onUpdate { it.copy(speechPitch = SettingsRepository.clampSpeech(it.speechPitch + AppSettings.SPEECH_STEP)) } },
+            canDecrease = settings.speechPitch > AppSettings.SPEECH_MIN + EPS,
+            canIncrease = settings.speechPitch < AppSettings.SPEECH_MAX - EPS,
         )
 
-        SectionHeading(stringResource(R.string.settings_directions))
+        Group(stringResource(R.string.settings_directions))
+        SubLabel(stringResource(R.string.settings_direction_style))
         RadioGroup(
             options = listOf(
                 RadioOption(DirectionStyle.LEFT_RIGHT, stringResource(R.string.direction_left_right), stringResource(R.string.direction_left_right_desc)),
@@ -69,31 +91,7 @@ fun SettingsScreen(
             selected = settings.directionStyle,
             onSelect = { v -> onUpdate { it.copy(directionStyle = v) } },
         )
-
-        SectionHeading(stringResource(R.string.settings_vibration))
-        ToggleRow(
-            title = stringResource(R.string.settings_haptics),
-            description = stringResource(R.string.settings_haptics_desc),
-            checked = settings.hapticsEnabled,
-            onCheckedChange = { v -> onUpdate { it.copy(hapticsEnabled = v, hapticsOnly = if (!v) false else it.hapticsOnly) } },
-        )
-        ToggleRow(
-            title = stringResource(R.string.settings_haptics_only),
-            description = stringResource(R.string.settings_haptics_only_desc),
-            checked = settings.hapticsOnly,
-            enabled = settings.hapticsEnabled,
-            onCheckedChange = { v -> onUpdate { it.copy(hapticsOnly = v) } },
-        )
-
-        SectionHeading(stringResource(R.string.settings_camera))
-        ToggleRow(
-            title = stringResource(R.string.settings_auto_torch),
-            description = stringResource(R.string.settings_auto_torch_desc),
-            checked = settings.autoTorchInLowLight,
-            onCheckedChange = { v -> onUpdate { it.copy(autoTorchInLowLight = v) } },
-        )
-
-        SectionHeading(stringResource(R.string.settings_units))
+        SubLabel(stringResource(R.string.settings_units))
         RadioGroup(
             options = listOf(
                 RadioOption(DistanceUnits.METRIC, stringResource(R.string.units_metric), stringResource(R.string.units_metric_desc)),
@@ -103,7 +101,37 @@ fun SettingsScreen(
             onSelect = { v -> onUpdate { it.copy(units = v) } },
         )
 
-        SectionHeading(stringResource(R.string.settings_appearance))
+        Group(stringResource(R.string.settings_alerts))
+        KerbstoneGroup {
+            ToggleRow(
+                title = stringResource(R.string.settings_haptics),
+                description = stringResource(R.string.settings_haptics_desc),
+                checked = settings.hapticsEnabled,
+                onCheckedChange = { v -> onUpdate { it.copy(hapticsEnabled = v, hapticsOnly = if (!v) false else it.hapticsOnly) } },
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_haptics_only),
+                description = stringResource(
+                    if (settings.hapticsEnabled) R.string.settings_haptics_only_desc else R.string.settings_haptics_only_needs,
+                ),
+                checked = settings.hapticsOnly,
+                enabled = settings.hapticsEnabled,
+                onCheckedChange = { v -> onUpdate { it.copy(hapticsOnly = v) } },
+            )
+        }
+
+        Group(stringResource(R.string.settings_camera))
+        ToggleRow(
+            title = stringResource(R.string.settings_auto_torch),
+            description = stringResource(R.string.settings_auto_torch_desc),
+            checked = settings.autoTorchInLowLight,
+            onCheckedChange = { v -> onUpdate { it.copy(autoTorchInLowLight = v) } },
+        )
+
+        Group(stringResource(R.string.settings_contacts))
+        EmergencyContactsEditor(settings.emergencyContacts, onAddContact, onRemoveContact)
+
+        Group(stringResource(R.string.settings_display))
         RadioGroup(
             options = listOf(
                 RadioOption(ThemeMode.DARK, stringResource(R.string.theme_dark)),
@@ -113,41 +141,53 @@ fun SettingsScreen(
             selected = settings.themeMode,
             onSelect = { v -> onUpdate { it.copy(themeMode = v) } },
         )
-
-        SectionHeading(stringResource(R.string.settings_contacts))
-        EmergencyContactsEditor(settings.emergencyContacts, onAddContact, onRemoveContact)
-
-        SectionHeading(stringResource(R.string.settings_advanced))
-        ToggleRow(
-            title = stringResource(R.string.settings_debug),
-            description = stringResource(R.string.settings_debug_desc),
-            checked = settings.debugOverlay,
-            onCheckedChange = { v -> onUpdate { it.copy(debugOverlay = v) } },
-        )
-        ToggleRow(
-            title = stringResource(R.string.settings_experimental),
-            description = stringResource(R.string.settings_experimental_desc),
-            checked = settings.experimentalFeatures,
-            onCheckedChange = { v -> onUpdate { it.copy(experimentalFeatures = v) } },
-        )
+        Spacer(Modifier.height(4.dp))
         BigActionButton(
             text = stringResource(R.string.settings_replay_onboarding),
             onClick = onReplayOnboarding,
-            icon = Icons.Filled.School,
-            minHeight = MinTouchTarget,
             style = ActionStyle.QUIET,
+            minHeight = MinTouchTarget,
         )
+
+        Group(stringResource(R.string.settings_developer))
+        KerbstoneGroup {
+            ToggleRow(
+                title = stringResource(R.string.settings_debug),
+                description = stringResource(R.string.settings_debug_desc),
+                checked = settings.debugOverlay,
+                onCheckedChange = { v -> onUpdate { it.copy(debugOverlay = v) } },
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_experimental),
+                description = stringResource(R.string.settings_experimental_desc),
+                checked = settings.experimentalFeatures,
+                onCheckedChange = { v -> onUpdate { it.copy(experimentalFeatures = v) } },
+            )
+        }
     }
 }
 
+/** Group heading with room above it, so groups read as separate stretches of kerb. */
 @Composable
-private fun SectionLabel(text: String) {
-    androidx.compose.material3.Text(text, style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+private fun Group(text: String, first: Boolean = false) {
+    if (!first) Spacer(Modifier.height(18.dp))
+    SectionHeading(text)
+}
+
+/** Names a choice whose options would be ambiguous on their own ("Minimal", "Metric"). */
+@Composable
+private fun SubLabel(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.titleMedium,
+        color = VisionNavTheme.kerb.onGroundDim,
+        modifier = Modifier.semantics { heading() },
+    )
 }
 
 private fun format1(value: Float): String = String.format(Locale.getDefault(), "%.1f", value)
 
-@Preview(name = "Settings", showBackground = true, heightDp = 3000)
+@Preview(name = "Settings", showBackground = true, heightDp = 4200)
 @Composable
 private fun SettingsPreview() {
     VisionNavTheme {
