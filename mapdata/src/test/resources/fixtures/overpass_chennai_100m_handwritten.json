@@ -1,0 +1,183 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.7 (HAND-WRITTEN VisionNav test fixture in Overpass out:json format; live capture failed with 504/timeout. Names and ids are synthetic.)",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-12T19:05:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "way",
+      "id": 900000001,
+      "bounds": { "minlat": 13.0594000, "minlon": 80.2487000, "maxlat": 13.0614000, "maxlon": 80.2505000 },
+      "geometry": [
+        { "lat": 13.0594000, "lon": 80.2487000 },
+        { "lat": 13.0599500, "lon": 80.2491800 },
+        { "lat": 13.0604200, "lon": 80.2496100 },
+        { "lat": 13.0609100, "lon": 80.2500500 },
+        { "lat": 13.0614000, "lon": 80.2505000 }
+      ],
+      "tags": {
+        "highway": "primary",
+        "name": "Fixture Main Road",
+        "lanes": "6",
+        "maxspeed": "50",
+        "surface": "asphalt",
+        "sidewalk": "both"
+      }
+    },
+    {
+      "type": "way",
+      "id": 900000002,
+      "bounds": { "minlat": 13.0601000, "minlon": 80.2482000, "maxlat": 13.0608000, "maxlon": 80.2496100 },
+      "geometry": [
+        { "lat": 13.0608000, "lon": 80.2482000 },
+        { "lat": 13.0606100, "lon": 80.2489000 },
+        { "lat": 13.0604200, "lon": 80.2496100 }
+      ],
+      "tags": {
+        "highway": "secondary",
+        "name": "Fixture One-Way Street",
+        "oneway": "yes",
+        "lanes": "2"
+      }
+    },
+    {
+      "type": "way",
+      "id": 900000003,
+      "bounds": { "minlat": 13.0598000, "minlon": 80.2496100, "maxlat": 13.0604200, "maxlon": 80.2508000 },
+      "geometry": [
+        { "lat": 13.0604200, "lon": 80.2496100 },
+        { "lat": 13.0601000, "lon": 80.2502000 },
+        { "lat": 13.0598000, "lon": 80.2508000 }
+      ],
+      "tags": {
+        "highway": "residential",
+        "name": "Fixture Lane",
+        "oneway": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 900000004,
+      "bounds": { "minlat": 13.0609000, "minlon": 80.2490000, "maxlat": 13.0611500, "maxlon": 80.2493500 },
+      "geometry": [
+        { "lat": 13.0609000, "lon": 80.2490000 },
+        { "lat": 13.0611500, "lon": 80.2493500 }
+      ],
+      "tags": {
+        "highway": "service",
+        "service": "parking_aisle"
+      }
+    },
+    {
+      "type": "way",
+      "id": 900000005,
+      "bounds": { "minlat": 13.0595500, "minlon": 80.2497000, "maxlat": 13.0597500, "maxlon": 80.2499500 },
+      "geometry": [
+        { "lat": 13.0595500, "lon": 80.2498000 },
+        { "lat": 13.0596500, "lon": 80.2499500 },
+        { "lat": 13.0597500, "lon": 80.2498000 },
+        { "lat": 13.0596500, "lon": 80.2497000 },
+        { "lat": 13.0595500, "lon": 80.2498000 }
+      ],
+      "tags": {
+        "highway": "tertiary",
+        "junction": "roundabout"
+      }
+    },
+    {
+      "type": "way",
+      "id": 900000006,
+      "bounds": { "minlat": 13.0606500, "minlon": 80.2499000, "maxlat": 13.0607000, "maxlon": 80.2499600 },
+      "geometry": [
+        { "lat": 13.0606500, "lon": 80.2499000 },
+        { "lat": 13.0607000, "lon": 80.2499600 }
+      ],
+      "tags": {
+        "highway": "steps",
+        "step_count": "12",
+        "handrail": "yes",
+        "incline": "up"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000001,
+      "lat": 13.0603000,
+      "lon": 80.2495000,
+      "tags": {
+        "highway": "crossing",
+        "crossing": "traffic_signals",
+        "crossing:island": "yes",
+        "tactile_paving": "yes",
+        "button_operated": "yes",
+        "traffic_signals:sound": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000002,
+      "lat": 13.0607800,
+      "lon": 80.2499000,
+      "tags": {
+        "highway": "crossing",
+        "crossing": "marked",
+        "crossing:markings": "zebra",
+        "crossing_ref": "zebra"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000003,
+      "lat": 13.0601600,
+      "lon": 80.2500900,
+      "tags": {
+        "crossing": "uncontrolled",
+        "crossing:island": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000004,
+      "lat": 13.0604200,
+      "lon": 80.2496100,
+      "tags": {
+        "highway": "traffic_signals",
+        "traffic_signals": "signal",
+        "traffic_signals:direction": "forward"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000005,
+      "lat": 13.0610500,
+      "lon": 80.2495500,
+      "tags": {
+        "entrance": "main",
+        "name": "Fixture Hospital Main Gate",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000006,
+      "lat": 13.0602900,
+      "lon": 80.2494600,
+      "tags": {
+        "barrier": "kerb",
+        "kerb": "lowered",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 910000007,
+      "lat": 13.0599600,
+      "lon": 80.2491900,
+      "tags": {
+        "highway": "crossing"
+      }
+    }
+  ]
+}
