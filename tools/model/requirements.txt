@@ -1,0 +1,12 @@
+# Export toolchain for VisionNav's YOLOv8n LiteRT model (Python 3.12, Windows/Linux, CPU).
+# Install into an isolated venv (see README.md). onnx2tf is installed separately with --no-deps.
+ultralytics==8.4.146
+tensorflow==2.19.0
+tf_keras==2.19.0
+onnx>=1.12.0,<2.0.0
+onnxslim>=0.1.82
+onnxruntime
+sng4onnx>=1.0.1
+onnx_graphsurgeon>=0.3.26
+ai-edge-litert>=1.2.0
+protobuf>=5
