@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,9 +35,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.visionnav.app.ui.kerb.ScreenGutter
+import com.visionnav.app.ui.kerb.bleed
 import com.visionnav.app.ui.theme.VisionNavTheme
 
 /** Minimum touch target for any control (spec: >= 72 dp). */
@@ -47,17 +49,24 @@ val PrimaryTouchTarget: Dp = 96.dp
 
 enum class ActionStyle { PRIMARY, SECONDARY, DANGER, QUIET }
 
-private data class ActionColors(val container: Color, val content: Color, val border: Color?)
+private data class ActionColors(val container: Color, val content: Color, val pressed: Color, val pressedContent: Color)
 
+/*
+ * Street roles:
+ *  SECONDARY = zebra bar (road paint on asphalt) — the everyday action.
+ *  PRIMARY   = signal amber — the one thing a screen wants you to do next.
+ *  QUIET     = kerb stone — navigation to other screens, settings.
+ *  DANGER    = signal red — stop / emergency.
+ * Pressing any bar flashes it amber, so a press is visible to low-vision users.
+ */
 @Composable
 private fun colorsFor(style: ActionStyle): ActionColors {
-    val cs = MaterialTheme.colorScheme
-    val status = VisionNavTheme.status
+    val k = VisionNavTheme.kerb
     return when (style) {
-        ActionStyle.PRIMARY -> ActionColors(cs.primary, cs.onPrimary, null)
-        ActionStyle.SECONDARY -> ActionColors(cs.surfaceContainerHigh, cs.onSurface, cs.outline)
-        ActionStyle.DANGER -> ActionColors(status.critical, status.onCritical, cs.onBackground)
-        ActionStyle.QUIET -> ActionColors(cs.surfaceContainer, cs.onSurface, cs.outlineVariant)
+        ActionStyle.SECONDARY -> ActionColors(k.bar, k.onBar, k.amber, k.onAmber)
+        ActionStyle.PRIMARY -> ActionColors(k.amber, k.onAmber, k.bar, k.onBar)
+        ActionStyle.QUIET -> ActionColors(k.kerb, k.onKerb, k.amber, k.onAmber)
+        ActionStyle.DANGER -> ActionColors(k.red, k.onRed, k.amber, k.onAmber)
     }
 }
 
@@ -150,38 +159,37 @@ private fun ActionSurface(
     supportingText: String?,
 ) {
     val colors = colorsFor(style)
+    val k = VisionNavTheme.kerb
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
-    val shape = RoundedCornerShape(24.dp)
-    val focusRing = MaterialTheme.colorScheme.onBackground
+    val pressed by interaction.collectIsPressedAsState()
+    val large = minHeight >= PrimaryTouchTarget
+    // Road paint has square ends; full-size bars run to the screen edge.
     var m = modifier
+        // Bars and kerbstones both run edge to edge; only the emergency button is a held object.
+        .then(if ((large && style != ActionStyle.DANGER) || style == ActionStyle.QUIET) Modifier.bleed() else Modifier)
         .fillMaxWidth()
         .heightIn(min = minHeight)
-        .clip(shape)
-        .background(colors.container)
-    m = when {
-        focused -> m.border(5.dp, focusRing, shape)
-        colors.border != null -> m.border(2.dp, colors.border, shape)
-        else -> m
-    }
+        .background(if (pressed) colors.pressed else colors.container)
+    if (focused) m = m.border(6.dp, k.amberInk)
     m = m.then(clickModifier(interaction))
     if (stateDescription != null) m = m.semantics { this.stateDescription = stateDescription }
-    if (!enabled) m = m.alpha(0.55f)
+    if (!enabled) m = m.alpha(0.5f)
 
-    CompositionLocalProvider(LocalContentColor provides colors.content) {
+    CompositionLocalProvider(LocalContentColor provides if (pressed) colors.pressedContent else colors.content) {
         Row(
-            modifier = m.padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = m.padding(horizontal = if (large || style == ActionStyle.QUIET) ScreenGutter + 8.dp else 20.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(18.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            if (icon != null) {
+            // Icons only where the shape itself is the warning (danger). Everywhere else the word is the label.
+            if (icon != null && style == ActionStyle.DANGER) {
                 Icon(icon, contentDescription = null, modifier = Modifier.size(40.dp))
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = text,
-                    style = if (minHeight >= PrimaryTouchTarget) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = if (large) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
                 )
                 if (supportingText != null) {
                     Text(text = supportingText, style = MaterialTheme.typography.bodyMedium)
@@ -202,11 +210,11 @@ fun LargeIconButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(10.dp)
     var m = modifier
         .sizeIn(minWidth = MinTouchTarget, minHeight = MinTouchTarget)
         .clip(shape)
-    if (focused) m = m.border(4.dp, MaterialTheme.colorScheme.onBackground, shape)
+    if (focused) m = m.border(5.dp, VisionNavTheme.kerb.amberInk, shape)
     androidx.compose.foundation.layout.Box(
         modifier = m
             .clickable(

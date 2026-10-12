@@ -89,7 +89,7 @@ fun VnScreen(
                 }
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .weight(1f)
@@ -97,12 +97,10 @@ fun VnScreen(
                         .semantics { heading() },
                 )
             }
-            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
             Column(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Spacer(Modifier.size(0.dp))
                 pinned()
             }
             Column(
@@ -110,8 +108,8 @@ fun VnScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 content = content,
             )
         }

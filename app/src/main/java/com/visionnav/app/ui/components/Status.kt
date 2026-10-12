@@ -1,5 +1,13 @@
 package com.visionnav.app.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import com.visionnav.app.ui.kerb.ChevronEdge
+import com.visionnav.app.ui.kerb.bleed
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,7 +81,10 @@ fun levelText(level: StatusLevel): String = stringResource(
     },
 )
 
-/** One status line: subsystem icon, text, and a level badge with icon + word. Read as one node. */
+/**
+ * One status line: what it is, then how it is, as words. Problems are set in signal amber AND
+ * use a different word, so colour is never the only cue. Read as one TalkBack node.
+ */
 @Composable
 fun StatusLine(
     icon: ImageVector,
@@ -82,24 +93,26 @@ fun StatusLine(
     modifier: Modifier = Modifier,
     detail: String? = null,
 ) {
+    val k = VisionNavTheme.kerb
+    val problem = level == StatusLevel.DEGRADED || level == StatusLevel.UNAVAILABLE
     Row(
         modifier = modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {}
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(30.dp))
         Column(Modifier.weight(1f)) {
-            Text(text, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium)
+            Text(text, style = MaterialTheme.typography.bodyLarge, color = k.onGround)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium, color = k.onGroundDim)
         }
         if (level != null) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(levelIcon(level), contentDescription = null, tint = levelColor(level), modifier = Modifier.size(28.dp))
-                Text(levelText(level), style = MaterialTheme.typography.labelLarge)
-            }
+            Text(
+                levelText(level),
+                style = MaterialTheme.typography.labelLarge,
+                color = if (problem) k.amberInk else k.onGroundDim,
+            )
         }
     }
 }
@@ -107,7 +120,7 @@ fun StatusLine(
 /** GPS / heading / camera / detector summary. The mock detector is always called out. */
 @Composable
 fun StatusStrip(state: AppUiState, modifier: Modifier = Modifier) {
-    OutlinedPanel(modifier) {
+    Column(modifier.fillMaxWidth()) {
         val gps = state.gps
         val gpsBase = gps.text.ifBlank { stringResource(R.string.status_location_unknown) }
         val gpsText = if (gps.accuracyM != null) {
@@ -185,16 +198,12 @@ fun StatusStrip(state: AppUiState, modifier: Modifier = Modifier) {
  */
 @Composable
 fun SafetyAlertBanner(alert: SafetyAlertUi, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
-    val status = VisionNavTheme.status
+    val k = VisionNavTheme.kerb
+    val critical = alert.severity == SafetySeverity.CRITICAL
     val (bg, fg) = when (alert.severity) {
-        SafetySeverity.CRITICAL -> status.critical to status.onCritical
-        SafetySeverity.WARNING, SafetySeverity.CAUTION -> status.warning to status.onWarning
-        SafetySeverity.INFO -> status.info to status.onInfo
-    }
-    val icon = when (alert.severity) {
-        SafetySeverity.CRITICAL -> Icons.Filled.Report
-        SafetySeverity.WARNING, SafetySeverity.CAUTION -> Icons.Filled.Warning
-        SafetySeverity.INFO -> Icons.Filled.Info
+        SafetySeverity.CRITICAL -> k.red to k.onRed
+        SafetySeverity.WARNING, SafetySeverity.CAUTION -> k.amber to k.onAmber
+        SafetySeverity.INFO -> k.kerb to k.onKerb
     }
     val label = stringResource(
         when (alert.severity) {
@@ -204,27 +213,27 @@ fun SafetyAlertBanner(alert: SafetyAlertUi, onDismiss: () -> Unit, modifier: Mod
             SafetySeverity.INFO -> R.string.alert_info
         },
     )
-    val live = if (alert.severity == SafetySeverity.CRITICAL) LiveRegionMode.Assertive else LiveRegionMode.Polite
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = bg,
-        contentColor = fg,
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(3.dp, MaterialTheme.colorScheme.onBackground),
+    val live = if (critical) LiveRegionMode.Assertive else LiveRegionMode.Polite
+    // A full-width signal band with a chevron edge, like a hazard board: unmistakable at a glance.
+    Row(
+        modifier
+            .bleed()
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .background(bg),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(44.dp))
-            Column(
-                Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                    .semantics(mergeDescendants = true) { liveRegion = live },
-            ) {
-                Text(label.uppercase(), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
-                Text(alert.text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            }
-            LargeIconButton(Icons.Filled.Close, stringResource(R.string.alert_dismiss), onDismiss, tint = fg)
+        ChevronEdge(fg, Modifier.width(28.dp).fillMaxHeight())
+        Column(
+            Modifier
+                .weight(1f)
+                .padding(start = 16.dp, top = 14.dp, bottom = 14.dp)
+                .semantics(mergeDescendants = true) { liveRegion = live },
+        ) {
+            Text(label, style = MaterialTheme.typography.titleSmall, color = fg)
+            Text(alert.text, style = if (critical) MaterialTheme.typography.displaySmall else MaterialTheme.typography.headlineMedium, color = fg)
         }
+        LargeIconButton(Icons.Filled.Close, stringResource(R.string.alert_dismiss), onDismiss, tint = fg)
     }
 }
 
@@ -232,29 +241,28 @@ fun SafetyAlertBanner(alert: SafetyAlertUi, onDismiss: () -> Unit, modifier: Mod
 @Composable
 fun ErrorBanners(errors: List<ErrorBannerUi>, onDismiss: (Long) -> Unit, modifier: Modifier = Modifier) {
     if (errors.isEmpty()) return
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        val label = stringResource(R.string.error_label)
+    val k = VisionNavTheme.kerb
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         errors.forEach { error ->
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shape = MaterialTheme.shapes.large,
-                border = BorderStroke(3.dp, MaterialTheme.colorScheme.error),
+            Row(
+                Modifier
+                    .bleed()
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .background(k.kerb),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(36.dp))
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .padding(horizontal = 12.dp)
-                            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
-                    ) {
-                        Text(label, style = MaterialTheme.typography.labelLarge)
-                        Text(error.text, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    LargeIconButton(Icons.Filled.Close, stringResource(R.string.error_dismiss), { onDismiss(error.id) })
-                }
+                Box(Modifier.width(10.dp).fillMaxHeight().background(k.amber))
+                Text(
+                    error.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = k.onKerb,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 18.dp, top = 12.dp, bottom = 12.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                LargeIconButton(Icons.Filled.Close, stringResource(R.string.error_dismiss), { onDismiss(error.id) }, tint = k.onKerb)
             }
         }
     }

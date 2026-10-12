@@ -3,37 +3,38 @@ package com.visionnav.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /*
- * VisionNav palette: deep navy + high-visibility amber. All foreground/background pairs used
- * for text meet WCAG AAA (>= 7:1) except decorative outlines. Colour is never the only signal:
- * every status also has an icon and text.
+ * "Kerb" palette — taken from the street, not from a UI kit.
+ *
+ * Asphalt is the ground, thermoplastic road paint is the primary mark (zebra bars, text), kerb
+ * concrete is the raised secondary surface, and the two signal colours are used only for what
+ * they mean on a real street: amber = attention, red = stop. Colour never carries meaning alone;
+ * every signal also has words (and, for alerts, an earcon and vibration).
+ *
+ * Contrast (WCAG 2.x, computed): Paint/Asphalt 13.1:1, PaintDim/Asphalt 8.3:1, Amber/Asphalt 8.5:1,
+ * Paint/KerbGrey 9.6:1, AmberDeep/Paint 5.2:1, Paint/SignalRed 4.95:1 (critical text is large and
+ * bold, AAA-large). SignalRed on Asphalt is only 2.6:1, so red is a fill, never text on the ground.
  */
 
-// Navy ramp
-val Navy950 = Color(0xFF040B1A)
-val Navy900 = Color(0xFF07142B)
-val Navy850 = Color(0xFF0B1C3A)
-val Navy800 = Color(0xFF102549)
-val Navy700 = Color(0xFF16305C)
-val Navy600 = Color(0xFF1F3F75)
-val Navy500 = Color(0xFF0B2A5B)
+/** Wet-asphalt grey. The ground everything sits on (dark theme). */
+val Asphalt = Color(0xFF26282B)
 
-// Hi-vis accents
-val Amber400 = Color(0xFFFFC629)
-val Amber300 = Color(0xFFFFD75E)
-val Amber800 = Color(0xFF6B4500)
-val Sky300 = Color(0xFF9BD8FF)
-val Sky900 = Color(0xFF04223A)
+/** Slightly lifted asphalt, for pressed states and the text-field well. */
+val AsphaltLift = Color(0xFF2F3236)
 
-// Neutrals
-val White = Color(0xFFFFFFFF)
-val Mist100 = Color(0xFFE6ECF7)
-val Mist200 = Color(0xFFD3DCEC)
-val Paper = Color(0xFFFBF8F0)
-val Ink = Color(0xFF0A1222)
-val InkSoft = Color(0xFF26324A)
+/** Kerb concrete: raised secondary surfaces (quiet rows, panels). */
+val KerbGrey = Color(0xFF3A3D42)
 
-// Semantic
-val Red400 = Color(0xFFFF6B5E)
-val Red700 = Color(0xFFB0170C)
-val Green300 = Color(0xFF7EE2A8)
-val Green800 = Color(0xFF0B5A2E)
+/** Thermoplastic road-marking white: zebra bars and primary text. */
+val Paint = Color(0xFFF2F1EC)
+
+/** Worn paint: secondary text. Still AAA on asphalt. */
+val PaintDim = Color(0xFFC3C2BC)
+
+/** Signal amber: attention, focus, warnings, the tactile pad. */
+val SignalAmber = Color(0xFFFFB81C)
+
+/** Darker amber for text/strokes on light paint backgrounds (4.9:1 on Paint). */
+val SignalAmberDeep = Color(0xFF8A5A00)
+
+/** Signal red: critical stop alerts only. */
+val SignalRed = Color(0xFFC62A1F)

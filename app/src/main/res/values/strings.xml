@@ -97,20 +97,20 @@
     <string name="home_listening_state">Listening</string>
     <string name="home_heard">Heard: %1$s</string>
     <string name="home_where_am_i">Where am I</string>
-    <string name="home_where_am_i_hint">Your street, area and direction</string>
+    <string name="home_where_am_i_hint">hear your street, area and direction</string>
     <string name="home_whats_around">What\'s around</string>
-    <string name="home_whats_around_hint">Objects the camera can see ahead</string>
+    <string name="home_whats_around_hint">hear what the camera can see ahead</string>
     <string name="home_navigate">Navigate</string>
-    <string name="home_navigate_hint">Search for a destination</string>
+    <string name="home_navigate_hint">search for a place to walk to</string>
     <string name="home_resume_navigation">Return to navigation</string>
     <string name="home_resume_hint">Route to %1$s</string>
     <string name="home_traffic_check">Traffic check</string>
-    <string name="home_traffic_hint">Describe traffic in front of you at a crossing</string>
+    <string name="home_traffic_hint">describe traffic in front of the camera</string>
     <string name="home_saved_places">Saved places</string>
     <string name="home_saved_places_hint">Home, work and places you saved</string>
     <string name="home_explore_start">Explore without a route</string>
     <string name="home_explore_stop">Stop exploring</string>
-    <string name="home_explore_hint">Obstacle alerts while you walk</string>
+    <string name="home_explore_hint">get obstacle alerts while you walk</string>
     <string name="home_status_heading">Status</string>
     <string name="home_more_heading">More</string>
     <string name="home_settings">Settings</string>
@@ -333,4 +333,16 @@
     <string name="service_text_navigating">Navigating. Camera and location in use.</string>
     <string name="service_text_crossing">Observing traffic. Camera sees ahead only.</string>
     <string name="service_text_exploring">Exploring. Obstacle alerts on.</string>
+    <!-- Home (Kerb redesign) -->
+    <string name="home_pane_title">VisionNav home</string>
+    <string name="home_pad_speak">Speak</string>
+    <string name="home_pad_listening">Listening</string>
+    <string name="home_pad_hint">start listening for a command</string>
+    <string name="home_pad_hint_stop">stop listening</string>
+    <string name="home_back_to_route">Back to route</string>
+    <string name="home_back_to_traffic">Back to traffic check</string>
+    <string name="home_check_traffic">Check traffic</string>
+    <string name="home_go_somewhere">Go somewhere</string>
+    <string name="home_repeat">Repeat</string>
+    <string name="home_sos_hold">Hold for help</string>
 </resources>
