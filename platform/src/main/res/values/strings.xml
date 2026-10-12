@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spoken permission rationales (PermissionCatalog). Short, plain, no safety promises. -->
+    <string name="vn_rationale_navigation">VisionNav needs your precise location to give walking directions and tell you where you are.</string>
+    <string name="vn_rationale_camera">VisionNav needs the camera to describe what is in front of you. Images stay on your phone.</string>
+    <string name="vn_rationale_voice">VisionNav needs the microphone so you can give voice commands. Speech is only captured while you are giving a command.</string>
+    <string name="vn_rationale_activity">VisionNav uses your step activity to know whether you are walking or standing still.</string>
+    <string name="vn_rationale_sos">VisionNav needs permission to send text messages so it can text your location to your emergency contacts after you confirm an SOS.</string>
+    <string name="vn_rationale_notifications">VisionNav shows a notification while guidance is running, so you can stop it at any time.</string>
+</resources>

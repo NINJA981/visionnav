@@ -1,1 +1,40 @@
-<manifest />
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- FusedLocationSource -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- SpeechInput -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- VibratorHapticPlayer (normal permission) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- SosMessenger direct send; without it the SMS app is opened instead -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- StepActivitySource: step detector on API 29+ -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- HIGH_SAMPLING_RATE_SENSORS not needed: sensors run at SENSOR_DELAY_GAME (~50 Hz). -->
+
+    <!-- SEND_SMS would otherwise imply a required telephony feature and hide the app on
+         non-phone devices; SOS falls back to the compose intent there. -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.stepdetector" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+    <!-- Package visibility (API 30+): needed to bind the TTS engine and speech recogniser,
+         and to resolve the SMS compose intent. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+    </queries>
+</manifest>
