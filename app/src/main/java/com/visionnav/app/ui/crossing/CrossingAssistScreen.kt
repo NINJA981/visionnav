@@ -79,7 +79,9 @@ fun CrossingAssistScreen(
                 modifier = Modifier.semantics { heading() },
             )
             Text(stringResource(R.string.crossing_coverage), style = MaterialTheme.typography.titleLarge, color = k.onGroundDim)
-            if (crossing.stage != CrossingStage.SIDEWALK) {
+            // Only once a multi-part crossing has progressed; "first part of the road" at the start
+            // could be heard as "you are on the road".
+            if (crossing.stage in SHOWN_STAGES) {
                 Text(stringResource(R.string.crossing_stage, stageText(crossing.stage)), style = MaterialTheme.typography.titleMedium, color = k.onGroundDim)
             }
             if (crossing.userConfirmedAtCrossing) {
@@ -134,6 +136,8 @@ fun CrossingAssistScreen(
         )
     }
 }
+
+private val SHOWN_STAGES = setOf(CrossingStage.REFUGE, CrossingStage.ROAD_SEGMENT_2, CrossingStage.UNKNOWN)
 
 /** Vertical zebra stripes, full bleed: the crossing as you face it from the kerb. Decorative. */
 @Composable

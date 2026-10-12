@@ -849,10 +849,15 @@ class VisionNavEngine @Inject constructor(
 
     private fun sayObservation(a: Announcement) {
         say(a)
+        // Session confirmations and the coverage reminder are spoken but are not observations; the
+        // screen states coverage once, permanently. Repeating a line twice in a row adds nothing.
+        if (a.text in NOT_OBSERVATIONS) return
         _state.update {
+            val isContext = a.priority == AnnouncementPriority.NAVIGATION
             it.copy(
-                observationLines = (it.observationLines + a.text).takeLast(MAX_OBSERVATION_LINES),
-                crossingContextText = if (a.priority == AnnouncementPriority.NAVIGATION) a.text else it.crossingContextText,
+                observationLines = if (isContext || it.observationLines.lastOrNull() == a.text) it.observationLines
+                else (it.observationLines + a.text).takeLast(MAX_OBSERVATION_LINES),
+                crossingContextText = if (isContext) a.text else it.crossingContextText,
             )
         }
     }
@@ -887,6 +892,7 @@ class VisionNavEngine @Inject constructor(
         private const val CONTEXT_REFETCH_MS = 120_000L
         private const val MAX_OBSERVATION_LINES = 8
         private const val PREVIEW_REUSE_MS = 120_000L
+        private val NOT_OBSERVATIONS = setOf(CrossingPhrases.OBSERVING, CrossingPhrases.COVERAGE_REMINDER, CrossingPhrases.OBSERVATION_ENDED)
         private const val NO_LOCATION = "no location"
         private val OBSERVING_STATES = setOf(CrossingAssistState.OBSERVING_TRAFFIC, CrossingAssistState.OBSERVATION_UNCERTAIN)
     }
