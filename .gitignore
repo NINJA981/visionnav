@@ -1,0 +1,14 @@
+.gradle/
+build/
+/local.properties
+/.idea/
+*.iml
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+/tools/model/.venv/
+/tools/model/runs/
+/tools/model/*.pt
+/tools/model/out/
+.claude/
