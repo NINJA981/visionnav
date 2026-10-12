@@ -153,4 +153,21 @@ class SettingsRepositoryTest {
         assertThat(s.themeMode).isEqualTo(ThemeMode.LIGHT)
         assertThat(s.emergencyContacts).isEmpty()
     }
+
+    @Test
+    fun implicitlyStoredTheme_fromOlderVersion_readsAsCurrentDefault() = runTest {
+        val (store, _) = openStore()
+        // An older version wrote every field, including its dark default, without the user choosing it.
+        store.edit { it[stringPreferencesKey("theme_mode")] = "DARK" }
+        assertThat(SettingsRepository(store).current().themeMode).isEqualTo(ThemeMode.LIGHT)
+    }
+
+    @Test
+    fun explicitThemeChoice_persists() = runTest {
+        val (store, _) = openStore()
+        val repo = SettingsRepository(store)
+        repo.update { it.copy(themeMode = ThemeMode.DARK) }
+        repo.update { it.copy(verbosity = Verbosity.MINIMAL) } // unrelated later write keeps the choice
+        assertThat(repo.current().themeMode).isEqualTo(ThemeMode.DARK)
+    }
 }

@@ -46,8 +46,10 @@ class SettingsRepository @Inject constructor(
     /** Atomically reads, transforms and writes the full settings object. */
     suspend fun update(transform: (AppSettings) -> AppSettings) {
         dataStore.edit { prefs ->
-            val updated = transform(prefs.toSettings())
+            val before = prefs.toSettings()
+            val updated = transform(before)
             prefs.write(updated)
+            if (updated.themeMode != before.themeMode) prefs[Keys.THEME_CHOSEN] = true
         }
     }
 
@@ -83,7 +85,9 @@ class SettingsRepository @Inject constructor(
             hapticsOnly = this[Keys.HAPTICS_ONLY] ?: d.hapticsOnly,
             autoTorchInLowLight = this[Keys.AUTO_TORCH] ?: d.autoTorchInLowLight,
             units = enumOr(this[Keys.UNITS], d.units),
-            themeMode = enumOr(this[Keys.THEME], d.themeMode),
+            // Every write stores all fields, so a stored theme is only a choice if the user made one.
+            // Earlier versions wrote their dark default implicitly; those installs get today's default.
+            themeMode = if (this[Keys.THEME_CHOSEN] == true) enumOr(this[Keys.THEME], d.themeMode) else d.themeMode,
             emergencyContacts = decodeContacts(this[Keys.CONTACTS]),
             debugOverlay = this[Keys.DEBUG_OVERLAY] ?: d.debugOverlay,
             experimentalFeatures = this[Keys.EXPERIMENTAL] ?: d.experimentalFeatures,
@@ -122,6 +126,7 @@ class SettingsRepository @Inject constructor(
         val AUTO_TORCH = booleanPreferencesKey("auto_torch_low_light")
         val UNITS = stringPreferencesKey("units")
         val THEME = stringPreferencesKey("theme_mode")
+        val THEME_CHOSEN = booleanPreferencesKey("theme_mode_chosen")
         val CONTACTS = stringPreferencesKey("emergency_contacts_json")
         val DEBUG_OVERLAY = booleanPreferencesKey("debug_overlay")
         val EXPERIMENTAL = booleanPreferencesKey("experimental_features")
