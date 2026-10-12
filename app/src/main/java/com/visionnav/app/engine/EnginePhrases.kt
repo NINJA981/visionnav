@@ -13,6 +13,8 @@ object EnginePhrases {
     const val LOCATION_UNAVAILABLE = "Location unavailable. Try again outdoors."
     const val CAMERA_UNAVAILABLE = "Camera unavailable."
     const val CAMERA_STARTING = "Starting camera."
+    const val CAMERA_NOT_READY = "Camera not ready yet. Try again in a moment."
+    const val DETECTOR_UNAVAILABLE = "Object recognition unavailable."
     const val NO_RESULTS = "No places found."
     const val SEARCH_FAILED = "Search unavailable. Check your connection."
     const val ROUTE_FAILED = "Could not find a walking route."
@@ -58,7 +60,7 @@ object EnginePhrases {
 
     /** Every fixed phrase, for the guard test. */
     val fixed: List<String> = listOf(
-        LOCATION_UNAVAILABLE, CAMERA_UNAVAILABLE, CAMERA_STARTING, NO_RESULTS, SEARCH_FAILED, ROUTE_FAILED,
+        LOCATION_UNAVAILABLE, CAMERA_UNAVAILABLE, CAMERA_STARTING, CAMERA_NOT_READY, DETECTOR_UNAVAILABLE, NO_RESULTS, SEARCH_FAILED, ROUTE_FAILED,
         ROUTE_OFFLINE, NAVIGATION_STOPPED, GUIDANCE_PAUSED, GUIDANCE_RESUMED, TORCH_ON, TORCH_OFF,
         TORCH_UNAVAILABLE, LOW_LIGHT_SUGGEST, LOW_LIGHT_AUTO, NOT_UNDERSTOOD, NO_SPEECH, VOICE_UNAVAILABLE,
         MIC_PERMISSION, SOS_CONFIRM, SOS_NO_CONTACTS, SOS_CANCELLED, SOS_OPENING_SMS, SOS_FAILED,

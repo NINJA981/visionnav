@@ -26,6 +26,8 @@ import javax.inject.Singleton
  *
  * The detector is created lazily by [CameraSession] on its inference thread (it injects
  * `dagger.Lazy<ObjectDetector>`), so model loading and GPU warm-up never run on the main thread.
+ * The app calls [CameraSession.prewarm] at startup so this happens in the background before the
+ * first camera request, without opening the camera.
  */
 @Module
 @InstallIn(SingletonComponent::class)

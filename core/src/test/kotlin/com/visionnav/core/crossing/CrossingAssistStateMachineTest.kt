@@ -136,6 +136,62 @@ class CrossingAssistStateMachineTest {
         assertThat(feed.demandCalls.last().second).isEqualTo(AnalysisDemand.NONE)
     }
 
+    // ---- Device bug: one tap of "Traffic" flickered demand OBSERVING → NONE → (seconds later) OBSERVING
+
+    @Test
+    fun userRequest_walkingReportedAtStart_doesNotEndObservation_demandStaysObserving() {
+        // IDLE → CROSSING_ASSIST: the activity source starts together with the observation and a single
+        // step event (the user just walked up / moved the phone to tap) reports WALKING for ~2 s.
+        sm.onActivity(MotionActivity.UNKNOWN)
+        sm.onUserRequestObservation()
+        assertThat(sm.state.value).isEqualTo(OBSERVING_TRAFFIC)
+        sm.onActivity(MotionActivity.WALKING)
+        assertThat(sm.state.value).isEqualTo(OBSERVING_TRAFFIC)
+
+        // Warm-up inputs of a session without GPS must not release demand either.
+        sm.onCameraState(CameraState.Starting)
+        sm.onContext(Fx.context(location = null, accuracyM = null, userPosition = UserPositionAssessment.UNKNOWN))
+        sm.onFrameQualityIssues(setOf(UncertaintyReason.BLUR))
+        sm.onFrameQualityIssues(emptySet())
+        sm.onCameraState(CameraState.Running(null, torchOn = false, hasTorch = true))
+        clock.advance(19_000)
+        sm.tick()
+        assertThat(sm.state.value).isEqualTo(OBSERVING_TRAFFIC)
+        assertThat(feed.demandCalls).containsExactly("crossing" to AnalysisDemand.OBSERVING)
+
+        // The observation still ends on its own timeout.
+        clock.advance(1_000)
+        assertThat(sm.tick().states()).containsExactly(OBSERVATION_COMPLETE)
+        assertThat(feed.demandCalls.map { it.second })
+            .containsExactly(AnalysisDemand.OBSERVING, AnalysisDemand.NONE).inOrder()
+    }
+
+    @Test
+    fun userRequest_walkingAfterStandingStill_stillCompletesObservation() {
+        sm.onActivity(MotionActivity.WALKING)
+        sm.onUserRequestObservation()
+        sm.onActivity(MotionActivity.STATIONARY) // the user stood still while observing
+        val events = sm.onActivity(MotionActivity.WALKING) // ...and walked on
+        assertThat(events.states()).containsExactly(OBSERVATION_COMPLETE, APPROACH_CONTEXT_AVAILABLE).inOrder()
+        assertThat(feed.demandCalls.last()).isEqualTo("crossing" to AnalysisDemand.NONE)
+    }
+
+    @Test
+    fun userRequest_afterEarlierSessionElsewhere_staleContextDoesNotAnchorAndExit() {
+        // Earlier session at USER, then stopped.
+        startObservingViaStationary()
+        sm.onUserStop()
+        assertThat(sm.state.value).isEqualTo(INACTIVE)
+
+        // Later, 300 m away, the user asks again before any fresh context exists.
+        sm.onUserRequestObservation()
+        val elsewhere = Fx.at(300.0, 0.0)
+        val events = sm.onContext(Fx.context(location = elsewhere, crossings = emptyList()))
+        assertThat(events.states()).isEmpty()
+        assertThat(sm.state.value).isEqualTo(OBSERVING_TRAFFIC)
+        assertThat(feed.demandCalls.last()).isEqualTo("crossing" to AnalysisDemand.OBSERVING)
+    }
+
     @Test
     fun qualityIssuesAndCameraUnavailable_toggleUncertain() {
         startObservingViaStationary()

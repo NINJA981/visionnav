@@ -129,6 +129,8 @@ class VisionNavEngine @Inject constructor(
     private var latestTracks: List<Track> = emptyList()
     private var latestEstimates: Map<Long, MotionEstimate> = emptyMap()
     private var lastFrameMs: Long? = null
+    /** Pending "What's around" requests counting analysed frames (engine thread only). */
+    private val sceneGates = mutableListOf<SceneWarmupGate>()
     private var lastPathHintMs = Long.MIN_VALUE / 2
     private var lowLightSinceMs: Long? = null
     private var lowLightHandled = false
@@ -263,6 +265,10 @@ class VisionNavEngine @Inject constructor(
     private fun onFrame(obs: FrameObservation) {
         val now = obs.elapsedMs
         lastFrameMs = now
+        if (sceneGates.isNotEmpty()) {
+            val ready = SceneWarmupGate.isDetectorReady(_state.value.camera)
+            sceneGates.forEach { it.onFrame(now, ready) }
+        }
         val orientationState = orientationSource.state.value
         val yaw = (orientationState as? com.visionnav.core.sensing.OrientationState.Available)?.orientation?.yawRateRadPerSec
 
@@ -585,8 +591,22 @@ class VisionNavEngine @Inject constructor(
     fun startTrafficObservation() = post {
         if (_state.value.mode == SessionMode.IDLE) setMode(SessionMode.CROSSING_ASSIST) else startSensors()
         if (_state.value.crossingState in OBSERVING_STATES) {
-            val orientation = _state.value.orientation ?: orientationEstimator.estimate(orientationSource.state.value)
-            reporter.describeOnRequest(latestEstimates.values.toList(), orientation, time.elapsedMs()).forEach(::sayObservation)
+            val now = time.elapsedMs()
+            val cam = _state.value.camera
+            val framesFresh = lastFrameMs?.let { now - it <= STALE_FRAME_MS } == true
+            when {
+                // Never "No vehicles recognised" from a camera that is not delivering analysed frames.
+                cam is CameraState.Unavailable && cam.reason != UncertaintyReason.DETECTOR_UNAVAILABLE ->
+                    sayObservation(EnginePhrases.error(EnginePhrases.CAMERA_UNAVAILABLE, "traffic"))
+                cam is CameraState.Unavailable || (cam is CameraState.Running && cam.capabilities?.isMock == true) ->
+                    sayObservation(EnginePhrases.error(EnginePhrases.DETECTOR_UNAVAILABLE, "traffic"))
+                !SceneWarmupGate.isDetectorReady(cam) || !framesFresh ->
+                    sayObservation(EnginePhrases.info(EnginePhrases.CAMERA_STARTING, "traffic"))
+                else -> {
+                    val orientation = _state.value.orientation ?: orientationEstimator.estimate(orientationSource.state.value)
+                    reporter.describeOnRequest(latestEstimates.values.toList(), orientation, now).forEach(::sayObservation)
+                }
+            }
         } else {
             crossing.onUserRequestObservation().speak()
         }
@@ -621,23 +641,38 @@ class VisionNavEngine @Inject constructor(
     // Scene, location queries
     // =====================================================================================
 
+    /**
+     * Describes the scene once enough frames have been analysed **since this request** by a ready
+     * detector ([SceneWarmupGate]); a cold camera or a detector still loading never produces
+     * "Nothing recognised".
+     */
     fun whatsAround() = post {
         val previousMode = _state.value.mode
         if (previousMode == SessionMode.IDLE) setMode(SessionMode.EXPLORING)
-        val waitUntil = time.elapsedMs() + EXPLORE_WARMUP_MS
-        while (time.elapsedMs() < waitUntil) {
-            val cs = _state.value.camera
-            if (cs is CameraState.Unavailable) break
-            if (cs is CameraState.Running && lastFrameMs != null && latestTracks.isNotEmpty()) break
-            delay(100)
-        }
-        when (val cs = _state.value.camera) {
-            is CameraState.Unavailable -> say(EnginePhrases.error(EnginePhrases.CAMERA_UNAVAILABLE, "scene"))
-            else -> {
-                if (cs !is CameraState.Running) say(EnginePhrases.info(EnginePhrases.CAMERA_STARTING, "scene"))
-                val desc = sceneDescriber.describe(latestTracks, time.elapsedMs(), _state.value.qualityIssues)
-                say(desc.toAnnouncement().copy(priority = AnnouncementPriority.NAVIGATION))
+        val gate = SceneWarmupGate(requestMs = time.elapsedMs())
+        sceneGates += gate
+        try {
+            if (!SceneWarmupGate.isDetectorReady(_state.value.camera) && _state.value.camera !is CameraState.Unavailable) {
+                say(EnginePhrases.info(EnginePhrases.CAMERA_STARTING, "scene"))
             }
+            var verdict = gate.verdict(time.elapsedMs(), _state.value.camera)
+            while (verdict == SceneWarmupGate.Verdict.WAIT) {
+                delay(SCENE_POLL_MS)
+                verdict = gate.verdict(time.elapsedMs(), _state.value.camera)
+            }
+            log.log("SCENE", "$verdict after ${gate.analysedFrames} frames")
+            when (verdict) {
+                SceneWarmupGate.Verdict.READY, SceneWarmupGate.Verdict.PARTIAL -> {
+                    val desc = sceneDescriber.describe(latestTracks, time.elapsedMs(), _state.value.qualityIssues)
+                    say(desc.toAnnouncement().copy(priority = AnnouncementPriority.NAVIGATION))
+                }
+                SceneWarmupGate.Verdict.NOT_READY -> say(EnginePhrases.error(EnginePhrases.CAMERA_NOT_READY, "scene"))
+                SceneWarmupGate.Verdict.DETECTOR_UNAVAILABLE -> say(EnginePhrases.error(EnginePhrases.DETECTOR_UNAVAILABLE, "scene"))
+                SceneWarmupGate.Verdict.CAMERA_UNAVAILABLE, SceneWarmupGate.Verdict.WAIT ->
+                    say(EnginePhrases.error(EnginePhrases.CAMERA_UNAVAILABLE, "scene"))
+            }
+        } finally {
+            sceneGates -= gate
         }
         if (previousMode == SessionMode.IDLE && _state.value.mode == SessionMode.EXPLORING) setMode(SessionMode.IDLE)
     }
@@ -846,7 +881,7 @@ class VisionNavEngine @Inject constructor(
         private const val ALERT_HOLD_MS = 3_000L
         private const val PATH_HINT_INTERVAL_MS = 6_000L
         private const val LOW_LIGHT_PERSIST_MS = 2_000L
-        private const val EXPLORE_WARMUP_MS = 3_000L
+        private const val SCENE_POLL_MS = 100L
         private const val CONTEXT_RADIUS_M = 120.0
         private const val CONTEXT_REFETCH_M = 60.0
         private const val CONTEXT_REFETCH_MS = 120_000L

@@ -317,6 +317,9 @@ class TrafficObservationReporterTest {
         assertThat(drive(sm.tick()).map { it.text }).containsExactly("Observation ended.")
         assertThat(reporter.isObserving).isFalse()
         drive(sm.onUserRequestObservation())
+        // Walking *resumed* after standing still during the observation (a WALKING reading straight
+        // after the request is the approach to the kerb and keeps observing; see the state machine test).
+        drive(sm.onActivity(MotionActivity.STATIONARY))
         assertThat(drive(sm.onActivity(MotionActivity.WALKING)).map { it.text }).containsExactly("Observation ended.")
     }
 

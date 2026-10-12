@@ -49,6 +49,9 @@ data class CrossingAssistConfig(
  *   ─(user request, OR STATIONARY sustained ≥ 2 s)▶ USER_STOPPED_FOR_OBSERVATION ▶ OBSERVING_TRAFFIC
  * OBSERVING_TRAFFIC ⇄ OBSERVATION_UNCERTAIN            (camera view problems appear / resolve)
  *   ─(timeout / resumed walking)▶ OBSERVATION_COMPLETE  (walking ▶ back to APPROACH_CONTEXT_AVAILABLE)
+ *     "Resumed" walking needs STATIONARY seen during this observation: a WALKING reading that only
+ *     reflects the steps taken to reach the kerb (e.g. a step event as the activity source starts
+ *     together with the observation) never ends it; the timeout and the user's stop still do.
  *   ─(user "next" / user confirms refuge)▶ SEGMENT_TRANSITION ▶ OBSERVING_TRAFFIC (fresh, history cleared)
  * any ─(user stop / moved > 30 m away / route ended)▶ EXITED ▶ INACTIVE
  * ```
@@ -107,6 +110,8 @@ class CrossingAssistStateMachine(
     private var activity = MotionActivity.UNKNOWN
     private var stationarySinceMs: Long? = null
     private var observationStartMs: Long? = null
+    /** STATIONARY was reported during the current observation, so a later WALKING means the user resumed walking. */
+    private var stoppedDuringObservation = false
     private var demandActive = false
     private var qualityIssues: Set<UncertaintyReason> = emptySet()
     private var cameraIssue: UncertaintyReason? = null
@@ -136,13 +141,16 @@ class CrossingAssistStateMachine(
     fun onActivity(newActivity: MotionActivity): List<CrossingAssistEvent> = process { now ->
         if (newActivity == MotionActivity.STATIONARY) {
             if (activity != MotionActivity.STATIONARY) stationarySinceMs = now
+            if (isObserving()) stoppedDuringObservation = true
         } else {
             stationarySinceMs = null
         }
         activity = newActivity
         if (newActivity == MotionActivity.WALKING) {
             when (_state.value) {
-                USER_STOPPED_FOR_OBSERVATION, OBSERVING_TRAFFIC, OBSERVATION_UNCERTAIN -> {
+                // WALKING without a stop during this observation is the approach to the kerb (or a single
+                // step event as the activity source starts), not "resumed walking": keep observing.
+                USER_STOPPED_FOR_OBSERVATION, OBSERVING_TRAFFIC, OBSERVATION_UNCERTAIN -> if (stoppedDuringObservation) {
                     completeObservation(TransitionCause.RESUMED_WALKING, now)
                     transition(APPROACH_CONTEXT_AVAILABLE, TransitionCause.RESUMED_WALKING, now)
                 }
@@ -294,6 +302,7 @@ class CrossingAssistStateMachine(
         resetObservationHistory()
         setDemand(true)
         observationStartMs = now
+        stoppedDuringObservation = activity == MotionActivity.STATIONARY
         if (_stage.value == CrossingStage.SIDEWALK) setStage(CrossingStage.ROAD_SEGMENT_1, now)
         val issues = currentViewIssues()
         _viewIssues.value = issues
@@ -349,6 +358,9 @@ class CrossingAssistStateMachine(
         _userPosition.value = latestContext?.userPosition ?: UserPositionAssessment.UNKNOWN
         setStage(CrossingStage.SIDEWALK, now)
         transition(INACTIVE, TransitionCause.EXIT_COMPLETE, now)
+        // A later observation (possibly elsewhere, after the location source stopped) must not anchor on
+        // this context: a stale anchor makes the first fresh fix look like "moved away" and exits at once.
+        latestContext = null
     }
 
     private fun reevaluateView(now: Long) {
@@ -364,6 +376,9 @@ class CrossingAssistStateMachine(
             else -> Unit
         }
     }
+
+    private fun isObserving(): Boolean = _state.value == USER_STOPPED_FOR_OBSERVATION ||
+        _state.value == OBSERVING_TRAFFIC || _state.value == OBSERVATION_UNCERTAIN
 
     private fun currentViewIssues(): Set<UncertaintyReason> = buildSet {
         cameraIssue?.let { add(it) }

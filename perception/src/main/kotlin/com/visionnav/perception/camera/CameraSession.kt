@@ -180,6 +180,18 @@ class CameraSession @Inject constructor(
         throttleFactor = factor.coerceIn(0.1f, 1f)
     }
 
+    /**
+     * Loads and warms up the detector in the background (on the inference thread) so the first
+     * camera request does not wait seconds for model load / GPU delegate init. Call once at app
+     * start from any thread; it returns immediately. It does **not** open the camera, register
+     * demand or change [cameraState] (which stays [CameraState.Inactive] without demand). Idempotent:
+     * the detector is loaded at most once, whether by this or by the first session start.
+     */
+    fun prewarm() {
+        Log.d(TAG, "prewarm: loading detector in background")
+        loadDetectorAsync()
+    }
+
     /** Current effective demand (max over clients). */
     val effectiveDemand: AnalysisDemand get() = synchronized(demandLock) { aggregator.effective }
 
@@ -412,13 +424,18 @@ class CameraSession @Inject constructor(
         }
     }
 
-    /** Loads the detector once, on the inference thread (model load + warm-up are slow). */
+    /**
+     * Loads the detector once, on the inference thread (model load + warm-up are slow). Frames are
+     * inferred on the same single thread, so none is analysed before the load has finished.
+     */
     private fun loadDetectorAsync() {
         inferenceExecutor.execute {
             if (detectorLoadAttempted) return@execute
             detectorLoadAttempted = true
             try {
+                val startMs = SystemClock.elapsedRealtime()
                 val d = detectorProvider.get()
+                Log.i(TAG, "detector ready in ${SystemClock.elapsedRealtime() - startMs} ms: ${d.capabilities.modelName} on ${d.capabilities.accelerator}")
                 detector = d
                 if (d.capabilities.isMock) Log.w(TAG, "using MOCK detector: ${d.capabilities}")
                 updateStatus { capabilities = d.capabilities; detectorReady = true }
