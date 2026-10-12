@@ -37,7 +37,9 @@ import com.visionnav.core.announce.AudioQueueManager
 import com.visionnav.core.announce.SafetyPhraseGuard
 import com.visionnav.core.common.UncertaintyReason
 import com.visionnav.core.crossing.CrossingAssistState
+import com.visionnav.app.ui.kerb.ArrowKind
 import com.visionnav.core.navigation.DirectionStyle
+import com.visionnav.core.navigation.ManeuverType
 import com.visionnav.core.navigation.NavigationPhrases
 import com.visionnav.core.navigation.Route
 import com.visionnav.core.sensing.LocationState
@@ -251,7 +253,21 @@ class EngineAppController @Inject constructor(
             isRerouting = p?.isOffRoute ?: false,
             hasArrived = p?.arrived ?: false,
             upcomingCrossingText = s.crossingContextText.takeIf { s.crossingState == CrossingAssistState.APPROACH_CONTEXT_AVAILABLE },
+            arrow = if (p?.arrived == true) ArrowKind.ARRIVE else arrowFor(next?.type),
         )
+    }
+
+    private fun arrowFor(type: ManeuverType?): ArrowKind = when (type) {
+        ManeuverType.SLIGHT_LEFT -> ArrowKind.SLIGHT_LEFT
+        ManeuverType.LEFT -> ArrowKind.LEFT
+        ManeuverType.SHARP_LEFT -> ArrowKind.SHARP_LEFT
+        ManeuverType.SLIGHT_RIGHT -> ArrowKind.SLIGHT_RIGHT
+        ManeuverType.RIGHT -> ArrowKind.RIGHT
+        ManeuverType.SHARP_RIGHT -> ArrowKind.SHARP_RIGHT
+        ManeuverType.U_TURN -> ArrowKind.U_TURN
+        ManeuverType.CROSS_ROAD -> ArrowKind.CROSSING
+        ManeuverType.ARRIVE, ManeuverType.ARRIVE_LEFT, ManeuverType.ARRIVE_RIGHT -> ArrowKind.ARRIVE
+        else -> ArrowKind.STRAIGHT
     }
 
     private fun previewUi(place: com.visionnav.core.navigation.Place, route: Route): RoutePreviewUi {

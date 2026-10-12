@@ -197,11 +197,11 @@
     <string name="nav_current_heading">Current instruction</string>
     <string name="nav_then">Then: %1$s</string>
     <string name="nav_progress">%1$d percent of the route done</string>
-    <string name="nav_off_route">Off route.</string>
+    <string name="nav_off_route">You may be off route.</string>
     <string name="nav_rerouting">Finding a new route.</string>
     <string name="nav_arrived">You have arrived.</string>
     <string name="nav_finish">Finish</string>
-    <string name="nav_repeat">Repeat instruction</string>
+    <string name="nav_repeat">Repeat</string>
     <string name="nav_stop">Stop navigation</string>
     <string name="nav_stop_confirm_title">Stop navigation?</string>
     <string name="nav_stop_confirm_body">Guidance to %1$s will end.</string>
@@ -229,13 +229,13 @@
     <string name="crossing_context_heading">Map information</string>
     <string name="crossing_observations_heading">Latest observations</string>
     <string name="crossing_no_observations">No observations yet. Silence does not mean there is no traffic.</string>
-    <string name="crossing_confirm">I\'m at the crossing</string>
-    <string name="crossing_confirm_hint">Tell VisionNav you are at the kerb</string>
+    <string name="crossing_confirm">I\'m at the kerb</string>
+    <string name="crossing_confirm_hint">tell VisionNav you are standing at the kerb</string>
     <string name="crossing_confirmed">Position confirmed at the crossing</string>
-    <string name="crossing_next_segment">Next segment (at island)</string>
-    <string name="crossing_next_segment_hint">Press when you reach the traffic island</string>
-    <string name="crossing_next_segment_unmapped">No island is mapped here. Press only if you are on an island.</string>
-    <string name="crossing_end">End observation</string>
+    <string name="crossing_next_segment">I\'m on the island</string>
+    <string name="crossing_next_segment_hint">start a fresh check for the next part of the road</string>
+    <string name="crossing_next_segment_unmapped">No island is mapped here. Use this only if you are standing on one.</string>
+    <string name="crossing_end">End traffic check</string>
     <string name="crossing_starting">Starting traffic observation.</string>
 
     <!-- Saved places -->
