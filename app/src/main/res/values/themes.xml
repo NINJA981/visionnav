@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; Compose draws everything else (see ui/theme). Navy avoids a white flash at launch. -->
+    <style name="Theme.VisionNav" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/vn_navy</item>
+        <item name="android:colorBackground">@color/vn_navy</item>
+        <item name="android:colorAccent">@color/vn_amber</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

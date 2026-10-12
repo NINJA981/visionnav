@@ -1,3 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    All user-facing UI text. Every string here is checked by StringsPhraseGuardTest against
+    com.visionnav.core.announce.SafetyPhraseGuard: VisionNav never claims a road is safe or
+    empty and never tells the user to cross.
+-->
 <resources>
     <string name="app_name">VisionNav</string>
+    <string name="app_tagline">Walking guidance by voice, vibration and camera</string>
+    <string name="loading">Loading VisionNav</string>
+
+    <!-- Common actions -->
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_next">Next</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_repeat">Repeat</string>
+    <string name="action_ok">OK</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="state_selected">Selected</string>
+    <string name="state_not_selected">Not selected</string>
+
+    <!-- Distances -->
+    <string name="dist_metres">%1$d metres</string>
+    <string name="dist_kilometres">%1$s kilometres</string>
+    <string name="dist_feet">%1$d feet</string>
+    <string name="dist_miles">%1$s miles</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_step">Step %1$d of %2$d</string>
+    <string name="onboarding_welcome_title">Welcome to VisionNav</string>
+    <string name="onboarding_welcome_body">VisionNav guides you on foot using speech and vibration. It plans walking routes, tells you where you are, and uses the phone camera to describe some of what is ahead, such as people, vehicles and benches.</string>
+    <string name="onboarding_welcome_point_voice">Speak a command or use the large buttons. Every screen works with TalkBack.</string>
+    <string name="onboarding_welcome_point_haptics">Turns and alerts also vibrate, so you can use VisionNav with speech muted.</string>
+    <string name="onboarding_welcome_point_device">Camera images are processed on this phone and never uploaded.</string>
+    <string name="onboarding_safety_title">Your safety comes first</string>
+    <string name="onboarding_safety_body">VisionNav adds information. It does not replace your cane, guide dog, hearing or orientation and mobility training.</string>
+    <string name="onboarding_safety_ack">I understand</string>
+    <string name="onboarding_hold_title">How to hold the phone</string>
+    <string name="onboarding_hold_body">Hold the phone upright in portrait, screen facing you, with the rear camera pointing forward.</string>
+    <string name="hold_point_mount">A lanyard or chest mount is recommended. It keeps the camera steady and your hands available for your cane or guide dog.</string>
+    <string name="hold_point_steady">Keep the phone still while checking traffic. Turning the phone makes the view unclear.</string>
+    <string name="hold_point_lens">Keep the camera lens uncovered and clean.</string>
+    <string name="hold_point_audio">Use one earbud or bone-conduction headphones so you can still hear the street.</string>
+    <string name="onboarding_permissions_title">Permissions</string>
+    <string name="onboarding_permissions_body">VisionNav asks for the permissions below. You can continue without them, but some features will not work.</string>
+    <string name="onboarding_grant">Grant permissions</string>
+    <string name="onboarding_grant_again">Request permissions again</string>
+    <string name="onboarding_contacts_title">Emergency contacts</string>
+    <string name="onboarding_contacts_body">Optional. When you confirm an SOS, VisionNav texts your location to these people. You can change them later in Settings.</string>
+    <string name="onboarding_finish">Finish setup</string>
+    <string name="onboarding_skip_contacts">Skip for now and finish</string>
+
+    <!-- Safety statements (onboarding, About, crossing screen) -->
+    <string name="safety_never_decides">VisionNav never decides when you should cross a road. That decision is always yours.</string>
+    <string name="safety_ahead_only">The camera sees only what is in front of the phone. It cannot see behind or beside you.</string>
+    <string name="safety_may_miss">Detection can miss vehicles, people and obstacles, especially in low light, rain or glare.</string>
+    <string name="safety_silence">Silence from VisionNav does not mean nothing is there. Keep listening to your surroundings.</string>
+
+    <!-- Permissions -->
+    <string name="perm_location_title">Location</string>
+    <string name="perm_location_body">Plans walking routes and tells you where you are.</string>
+    <string name="perm_camera_title">Camera</string>
+    <string name="perm_camera_body">Describes vehicles, people and objects ahead. Images stay on this phone.</string>
+    <string name="perm_microphone_title">Microphone</string>
+    <string name="perm_microphone_body">Lets you speak commands. Speech is recognised on the device where supported.</string>
+    <string name="perm_activity_title">Physical activity</string>
+    <string name="perm_activity_body">Notices when you stop walking, for example at a crossing.</string>
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_body">Shows that guidance is running while the screen is off.</string>
+    <string name="perm_sms_title">Text messages</string>
+    <string name="perm_sms_body">Sends your location to emergency contacts, only after you confirm an SOS.</string>
+    <string name="perm_status_granted">Granted</string>
+    <string name="perm_status_denied">Not granted</string>
+    <string name="perm_status_unknown">Not requested yet</string>
+
+    <!-- Emergency contacts editor -->
+    <string name="contacts_empty">No emergency contacts yet.</string>
+    <string name="contact_name_label">Contact name</string>
+    <string name="contact_phone_label">Phone number</string>
+    <string name="contact_add">Add contact</string>
+    <string name="contact_remove">Remove %1$s</string>
+    <string name="contact_error_name">Enter a name.</string>
+    <string name="contact_error_phone">Enter a phone number with at least 3 digits.</string>
+    <string name="contact_added">%1$s added.</string>
+
+    <!-- Home -->
+    <string name="home_speak">Speak a command</string>
+    <string name="home_speak_hint">Say navigate to a place, where am I, what is around, traffic, repeat, stop or help.</string>
+    <string name="home_listening">Listening. Tap to stop</string>
+    <string name="home_listening_state">Listening</string>
+    <string name="home_heard">Heard: %1$s</string>
+    <string name="home_where_am_i">Where am I</string>
+    <string name="home_where_am_i_hint">Your street, area and direction</string>
+    <string name="home_whats_around">What\'s around</string>
+    <string name="home_whats_around_hint">Objects the camera can see ahead</string>
+    <string name="home_navigate">Navigate</string>
+    <string name="home_navigate_hint">Search for a destination</string>
+    <string name="home_resume_navigation">Return to navigation</string>
+    <string name="home_resume_hint">Route to %1$s</string>
+    <string name="home_traffic_check">Traffic check</string>
+    <string name="home_traffic_hint">Describe traffic in front of you at a crossing</string>
+    <string name="home_saved_places">Saved places</string>
+    <string name="home_saved_places_hint">Home, work and places you saved</string>
+    <string name="home_explore_start">Explore without a route</string>
+    <string name="home_explore_stop">Stop exploring</string>
+    <string name="home_explore_hint">Obstacle alerts while you walk</string>
+    <string name="home_status_heading">Status</string>
+    <string name="home_more_heading">More</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_about">About and safety</string>
+    <string name="home_debug">Debug tools</string>
+    <string name="last_spoken_heading">Last spoken</string>
+    <string name="last_spoken_none">Nothing spoken yet.</string>
+
+    <!-- Status strip -->
+    <string name="status_location">Location: %1$s</string>
+    <string name="status_location_accuracy">%1$s, accurate to about %2$d metres</string>
+    <string name="status_location_unknown">Location unavailable</string>
+    <string name="status_heading">Direction: %1$s</string>
+    <string name="status_heading_unknown">Direction unavailable</string>
+    <string name="status_heading_unreliable">%1$s, compass unreliable</string>
+    <string name="status_heading_calibrate">Compass needs calibration. Move the phone slowly in a figure of eight.</string>
+    <string name="status_camera">Camera: %1$s</string>
+    <string name="status_detector">Detector: %1$s</string>
+    <string name="status_detector_mock">Demo detector — not real detection</string>
+    <string name="status_detector_none">No detector loaded</string>
+    <string name="status_detector_no_vehicles">This detector cannot recognise vehicles.</string>
+    <string name="status_performance">Performance: %1$s</string>
+    <string name="status_level_good">OK</string>
+    <string name="status_level_degraded">Limited</string>
+    <string name="status_level_unavailable">Unavailable</string>
+    <string name="status_level_off">Off</string>
+    <string name="perf_full">Full</string>
+    <string name="perf_battery_saver">Battery saver</string>
+    <string name="perf_thermal">Reduced to cool the phone</string>
+
+    <!-- SOS -->
+    <string name="sos_button">SOS. Press and hold</string>
+    <string name="sos_button_hint">Asks for help. Nothing is sent until you confirm.</string>
+    <string name="sos_long_press_label">Start SOS</string>
+    <string name="sos_tap_hint">To start SOS, press and hold the SOS button. With TalkBack, double tap and hold.</string>
+    <string name="sos_confirm_title">Send emergency message?</string>
+    <string name="sos_confirm_send">Yes, send SOS</string>
+    <string name="sos_confirm_cancel">No, cancel</string>
+    <string name="sos_sending">Sending emergency message.</string>
+    <string name="sos_result_title">SOS</string>
+    <string name="sos_failed_title">SOS not sent</string>
+
+    <!-- Alerts and problems -->
+    <string name="alert_critical">Critical alert</string>
+    <string name="alert_warning">Warning</string>
+    <string name="alert_caution">Caution</string>
+    <string name="alert_info">Notice</string>
+    <string name="alert_dismiss">Dismiss alert</string>
+    <string name="error_label">Problem</string>
+    <string name="error_dismiss">Dismiss problem</string>
+
+    <!-- Search -->
+    <string name="search_title">Where to?</string>
+    <string name="search_field_label">Destination</string>
+    <string name="search_field_hint">Place, street or landmark</string>
+    <string name="search_action">Search</string>
+    <string name="search_voice">Speak destination</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_loading">Searching.</string>
+    <string name="search_no_results">No places found for %1$s. Try a different name.</string>
+    <string name="search_result_distance">%1$s away</string>
+    <string name="search_result_action">Preview route</string>
+    <string name="search_results_heading">Results</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
+
+    <!-- Route preview -->
+    <string name="preview_title">Route preview</string>
+    <string name="preview_loading">Planning walking route.</string>
+    <string name="preview_length">Length: %1$s</string>
+    <string name="preview_duration">Time: %1$s</string>
+    <string name="preview_first">First instruction</string>
+    <string name="preview_start">Start navigation</string>
+    <string name="preview_choose_again">Choose another destination</string>
+    <string name="preview_no_selection">No destination selected.</string>
+    <string name="preview_crossing_note">At every road crossing, stop and use Traffic check. VisionNav describes; you decide.</string>
+
+    <!-- Active navigation -->
+    <string name="nav_title">Navigating to %1$s</string>
+    <string name="nav_title_generic">Navigation</string>
+    <string name="nav_starting">Starting navigation.</string>
+    <string name="nav_current_heading">Current instruction</string>
+    <string name="nav_then">Then: %1$s</string>
+    <string name="nav_progress">%1$d percent of the route done</string>
+    <string name="nav_off_route">Off route.</string>
+    <string name="nav_rerouting">Finding a new route.</string>
+    <string name="nav_arrived">You have arrived.</string>
+    <string name="nav_finish">Finish</string>
+    <string name="nav_repeat">Repeat instruction</string>
+    <string name="nav_stop">Stop navigation</string>
+    <string name="nav_stop_confirm_title">Stop navigation?</string>
+    <string name="nav_stop_confirm_body">Guidance to %1$s will end.</string>
+    <string name="nav_stop_confirm_yes">Yes, stop</string>
+    <string name="nav_stop_confirm_no">Keep navigating</string>
+
+    <!-- Torch -->
+    <string name="torch_label">Torch</string>
+    <string name="torch_turn_on">Turn torch on</string>
+    <string name="torch_turn_off">Turn torch off</string>
+    <string name="torch_low_light">Low light. The torch may help the camera.</string>
+
+    <!-- Crossing assist -->
+    <string name="crossing_title">Traffic check</string>
+    <string name="crossing_disclaimer">VisionNav never decides when you should cross. That decision is always yours.</string>
+    <string name="crossing_coverage">Camera sees ahead only.</string>
+    <string name="crossing_status_heading">Observation</string>
+    <string name="crossing_stage">Stage: %1$s</string>
+    <string name="stage_sidewalk">At the kerb</string>
+    <string name="stage_segment_1">First part of the road</string>
+    <string name="stage_refuge">At the traffic island</string>
+    <string name="stage_segment_2">Second part of the road</string>
+    <string name="stage_opposite">Other side</string>
+    <string name="stage_unknown">Position not confirmed</string>
+    <string name="crossing_context_heading">Map information</string>
+    <string name="crossing_observations_heading">Latest observations</string>
+    <string name="crossing_no_observations">No observations yet. Silence does not mean there is no traffic.</string>
+    <string name="crossing_confirm">I\'m at the crossing</string>
+    <string name="crossing_confirm_hint">Tell VisionNav you are at the kerb</string>
+    <string name="crossing_confirmed">Position confirmed at the crossing</string>
+    <string name="crossing_next_segment">Next segment (at island)</string>
+    <string name="crossing_next_segment_hint">Press when you reach the traffic island</string>
+    <string name="crossing_next_segment_unmapped">No island is mapped here. Press only if you are on an island.</string>
+    <string name="crossing_end">End observation</string>
+    <string name="crossing_starting">Starting traffic observation.</string>
+
+    <!-- Saved places -->
+    <string name="places_title">Saved places</string>
+    <string name="places_save_current">Save current location</string>
+    <string name="places_save_current_hint">Give the place where you stand a name</string>
+    <string name="places_empty">No saved places yet.</string>
+    <string name="places_navigate_to">Navigate to %1$s</string>
+    <string name="places_rename_item">Rename %1$s</string>
+    <string name="places_delete_item">Delete %1$s</string>
+    <string name="places_name_label">Place name</string>
+    <string name="places_name_error">Enter a name.</string>
+    <string name="places_rename_title">Rename %1$s</string>
+    <string name="places_delete_title">Delete %1$s?</string>
+    <string name="places_delete_body">This saved place will be removed.</string>
+    <string name="places_navigate">Navigate</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_speech">Speech</string>
+    <string name="settings_verbosity">Detail level</string>
+    <string name="verbosity_minimal">Minimal</string>
+    <string name="verbosity_minimal_desc">Only turns and warnings</string>
+    <string name="verbosity_standard">Standard</string>
+    <string name="verbosity_standard_desc">Turns, warnings and short descriptions</string>
+    <string name="verbosity_detailed">Detailed</string>
+    <string name="verbosity_detailed_desc">Everything, including street names and surroundings</string>
+    <string name="settings_rate">Speech rate</string>
+    <string name="settings_pitch">Speech pitch</string>
+    <string name="settings_value_times">%1$s times normal</string>
+    <string name="settings_decrease">Decrease %1$s</string>
+    <string name="settings_increase">Increase %1$s</string>
+    <string name="settings_directions">Directions</string>
+    <string name="direction_left_right">Left and right</string>
+    <string name="direction_left_right_desc">For example: turn right in 40 metres</string>
+    <string name="direction_clock">Clock face</string>
+    <string name="direction_clock_desc">For example: car at 2 o\'clock</string>
+    <string name="settings_vibration">Vibration</string>
+    <string name="settings_haptics">Vibration feedback</string>
+    <string name="settings_haptics_desc">Turns and alerts vibrate</string>
+    <string name="settings_haptics_only">Vibration only</string>
+    <string name="settings_haptics_only_desc">Mute speech and use vibration patterns only</string>
+    <string name="settings_camera">Camera</string>
+    <string name="settings_auto_torch">Torch in low light</string>
+    <string name="settings_auto_torch_desc">Turn on the torch automatically when it is dark</string>
+    <string name="settings_units">Units</string>
+    <string name="units_metric">Metric</string>
+    <string name="units_metric_desc">Metres and kilometres</string>
+    <string name="units_imperial">Imperial</string>
+    <string name="units_imperial_desc">Feet and miles</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="theme_dark">Dark, high contrast</string>
+    <string name="theme_light">Light, high contrast</string>
+    <string name="theme_system">Follow system setting</string>
+    <string name="settings_contacts">Emergency contacts</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="settings_debug">Debug overlay</string>
+    <string name="settings_debug_desc">Shows camera boxes and a session log for testing</string>
+    <string name="settings_experimental">Experimental features</string>
+    <string name="settings_experimental_desc">Features still being tested. Use extra care.</string>
+    <string name="settings_replay_onboarding">Show introduction again</string>
+
+    <!-- About -->
+    <string name="about_title">About and safety</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_what_heading">What VisionNav is</string>
+    <string name="about_what_body">VisionNav is a walking assistant for blind and low-vision people. It combines walking routes, live camera descriptions, and spoken and vibrating alerts.</string>
+    <string name="about_safety_heading">Safety</string>
+    <string name="about_limits_heading">Limitations</string>
+    <string name="limit_not_detected">Stairs, doors and kerbs are not detected by the current model.</string>
+    <string name="limit_distance">VisionNav does not measure distances to objects. Near and far are rough estimates from the camera image.</string>
+    <string name="limit_signals">Pedestrian walk signals are not recognised.</string>
+    <string name="limit_gps">GPS can be wrong by many metres, especially near tall buildings.</string>
+    <string name="about_privacy_heading">Privacy</string>
+    <string name="privacy_camera">Camera frames never leave this phone. No images are recorded or uploaded.</string>
+    <string name="privacy_network">The internet is used only for maps, place search and routes.</string>
+    <string name="privacy_log">The session log contains text only and stays on the phone unless you share it.</string>
+    <string name="about_credits_heading">Open-source credits</string>
+    <string name="credit_osm">Map data © OpenStreetMap contributors, available under the Open Database License.</string>
+    <string name="credit_valhalla">Walking routes by the Valhalla routing engine, MIT License.</string>
+    <string name="credit_photon">Place search by Photon, Apache License 2.0.</string>
+    <string name="credit_yolo">Object detection model YOLOv8 by Ultralytics, licensed under AGPL-3.0. The model and its source are available from Ultralytics.</string>
+    <string name="credit_android">Built with Android Jetpack, Kotlin, Hilt and LiteRT, Apache License 2.0.</string>
+
+    <!-- Debug -->
+    <string name="debug_title">Debug tools</string>
+    <string name="debug_overlay_heading">Camera overlay</string>
+    <string name="debug_overlay_placeholder">Camera preview and detection boxes appear here when the engine is connected.</string>
+    <string name="debug_log_heading">Session log</string>
+    <string name="debug_log_empty">No log entries yet.</string>
+    <string name="debug_log_count">%1$d entries, newest first</string>
 </resources>
