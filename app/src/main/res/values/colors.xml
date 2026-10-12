@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vn_navy">#FF07142B</color>
+    <color name="vn_navy_light">#FF16305C</color>
+    <color name="vn_amber">#FFFFC629</color>
+    <color name="ic_launcher_background">#FF07142B</color>
+</resources>
