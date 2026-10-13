@@ -39,6 +39,7 @@ object EnginePhrases {
     const val SAVE_PLACE_NEEDS_NAME = "Say save this place as, followed by a name."
     const val NOT_NAVIGATING = "No active route."
     const val SPEECH_RATE_CHANGED = "Speech speed changed."
+    const val SKILL_FAILED = "That did not work. Please try again."
     const val HELP = "You can say: take me to, followed by a place. Where am I. What's around. " +
         "Traffic. I'm at the crossing. Next segment. Repeat. Stop. Light on. Help for emergency."
 
@@ -64,6 +65,6 @@ object EnginePhrases {
         ROUTE_OFFLINE, NAVIGATION_STOPPED, GUIDANCE_PAUSED, GUIDANCE_RESUMED, TORCH_ON, TORCH_OFF,
         TORCH_UNAVAILABLE, LOW_LIGHT_SUGGEST, LOW_LIGHT_AUTO, NOT_UNDERSTOOD, NO_SPEECH, VOICE_UNAVAILABLE,
         MIC_PERMISSION, SOS_CONFIRM, SOS_NO_CONTACTS, SOS_CANCELLED, SOS_OPENING_SMS, SOS_FAILED,
-        SAVE_PLACE_NEEDS_NAME, NOT_NAVIGATING, SPEECH_RATE_CHANGED, HELP,
+        SAVE_PLACE_NEEDS_NAME, NOT_NAVIGATING, SPEECH_RATE_CHANGED, SKILL_FAILED, HELP,
     )
 }

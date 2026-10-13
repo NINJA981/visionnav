@@ -26,4 +26,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "VisionNav"
 
-include(":app", ":core", ":mapdata", ":perception", ":platform")
+include(":app", ":core", ":mapdata", ":perception", ":platform", ":phone", ":tools", ":assist", ":link")

@@ -49,6 +49,9 @@ class VoiceCommandParser(savedPlaceNames: Collection<String> = emptyList()) {
         savedPlaceNames.associateBy { normalize(it) }.filterKeys { it.isNotEmpty() }
 
     /** Parses the best of several recognizer hypotheses (ordered most to least confident). */
+    /** The parser's own normalisation (lower case, contractions expanded, punctuation removed), for feature skills. */
+    fun normalized(text: String): String = normalize(text)
+
     fun parse(alternatives: List<String>): VoiceCommand {
         var firstUnknown: VoiceCommand? = null
         for (alt in alternatives) {

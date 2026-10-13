@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.visionnav.app.R
+import com.visionnav.app.feature.FeatureScreen
 import com.visionnav.app.ui.components.ActionStyle
 import com.visionnav.app.ui.components.AlertArea
 import com.visionnav.app.ui.components.BigActionButton
@@ -67,6 +68,8 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenDebug: () -> Unit,
+    features: List<FeatureScreen> = emptyList(),
+    onOpenFeature: (String) -> Unit = {},
 ) {
     val aura = VisionNavTheme.aura
     val homeTitle = stringResource(R.string.home_pane_title)
@@ -155,6 +158,22 @@ fun HomeScreen(
             }
             Spacer(Modifier.height(10.dp))
 
+            // Features (calls, messages, camera tools, app control...) list themselves here.
+            val featureEntries = features.filter { it.homeLabel != null }
+            if (featureEntries.isNotEmpty()) {
+                ListGroup {
+                    featureEntries.forEach { f ->
+                        BigActionButton(
+                            text = f.homeLabel!!,
+                            onClick = { onOpenFeature(f.route) },
+                            onClickLabel = f.homeHint,
+                            style = ActionStyle.QUIET,
+                            minHeight = MinTouchTarget,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            }
             // One outlined list, rows separated by dividers (AURA §07: borders over boxes).
             ListGroup {
                 state.lastSpoken?.let { said ->

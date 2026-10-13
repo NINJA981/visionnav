@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.visionnav.app.BuildConfig
 import com.visionnav.app.R
+import com.visionnav.app.feature.AppNavigator
+import com.visionnav.app.feature.FeatureScreen
 import com.visionnav.app.settings.AppSettings
 import com.visionnav.app.settings.ThemeMode
 import com.visionnav.app.ui.about.AboutScreen
@@ -82,6 +84,8 @@ fun VisionNavAppRoot(
         val start: Any = remember { if (loaded.onboardingComplete) Routes.Home else Routes.Onboarding }
         VisionNavNavHost(
             state = state,
+            features = appViewModel.features,
+            navigator = appViewModel.navigator,
             settings = loaded,
             startDestination = start,
             onAction = appViewModel::dispatch,
@@ -100,6 +104,8 @@ fun VisionNavAppRoot(
 @Composable
 private fun VisionNavNavHost(
     state: AppUiState,
+    features: List<FeatureScreen>,
+    navigator: AppNavigator,
     settings: AppSettings,
     startDestination: Any,
     onAction: (UiAction) -> Unit,
@@ -109,6 +115,9 @@ private fun VisionNavNavHost(
 ) {
     FollowSessionMode(navController, state.sessionMode, enabled = settings.onboardingComplete)
     val back: () -> Unit = { navController.popBackStack() }
+    val openRoute: (String) -> Unit = { route -> navController.navigate(route) { launchSingleTop = true } }
+    // Skills and the engine can bring a feature screen forward ("read my messages").
+    LaunchedEffect(navigator) { navigator.routes.collect(openRoute) }
 
     // No transitions: respects reduced motion and avoids TalkBack focus jumping mid-animation.
     NavHost(
@@ -139,6 +148,8 @@ private fun VisionNavNavHost(
         composable<Routes.Home> {
             HomeScreen(
                 state = state,
+                features = features,
+                onOpenFeature = openRoute,
                 showDebug = settings.debugOverlay,
                 onAction = onAction,
                 onOpenSearch = { navController.navigate(Routes.Search) { launchSingleTop = true } },
@@ -202,6 +213,10 @@ private fun VisionNavNavHost(
         }
         composable<Routes.Debug> {
             DebugScreen(state = state, onAction = onAction, onBack = back, overlayContent = debugOverlayContent)
+        }
+        // Screens contributed by feature modules (phone, camera tools, app control, safety network).
+        features.forEach { feature ->
+            composable(feature.route) { feature.Content(onBack = back, navigate = openRoute) }
         }
     }
 }

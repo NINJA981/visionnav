@@ -50,6 +50,10 @@ dependencies {
     implementation(project(":mapdata"))
     implementation(project(":perception"))
     implementation(project(":platform"))
+    implementation(project(":phone"))
+    implementation(project(":tools"))
+    implementation(project(":assist"))
+    implementation(project(":link"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

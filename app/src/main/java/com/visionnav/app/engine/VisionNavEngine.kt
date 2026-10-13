@@ -1,5 +1,10 @@
 package com.visionnav.app.engine
 
+import kotlinx.coroutines.CancellationException
+import com.visionnav.platform.skill.SkillHost
+import com.visionnav.platform.skill.AuraSkill
+import com.visionnav.app.feature.AppNavigator
+import android.content.Intent
 import com.visionnav.core.announce.Announcement
 import com.visionnav.core.announce.AnnouncementPriority
 import com.visionnav.core.announce.AudioQueueManager
@@ -105,7 +110,12 @@ class VisionNavEngine @Inject constructor(
     private val powerGovernor: PowerGovernor,
     private val savedPlaces: SavedPlacesStore,
     private val log: SessionLog,
+    skills: Set<@JvmSuppressWildcards AuraSkill>,
+    private val navigator: AppNavigator,
 ) {
+    /** Feature voice skills (phone, camera tools, app control...), tried when the core parser doesn't match. */
+    private val skills: List<AuraSkill> = skills.sortedBy { it.order }
+
     private val engineDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val scope = CoroutineScope(SupervisorJob() + engineDispatcher)
 
@@ -728,7 +738,8 @@ class VisionNavEngine @Inject constructor(
         when (result) {
             is SpeechResult.Success -> {
                 _state.update { it.copy(voiceTranscript = result.alternatives.firstOrNull()) }
-                handleCommand(voiceParser.parse(result.alternatives))
+                val cmd = voiceParser.parse(result.alternatives)
+                if (cmd !is VoiceCommand.Unknown || !runSkill(result.alternatives)) handleCommand(cmd)
             }
             SpeechResult.NoMatch -> say(EnginePhrases.info(EnginePhrases.NO_SPEECH, "voice"))
             SpeechResult.PermissionDenied -> say(EnginePhrases.error(EnginePhrases.MIC_PERMISSION, "voice"))
@@ -770,7 +781,11 @@ class VisionNavEngine @Inject constructor(
                 say(EnginePhrases.info(EnginePhrases.GUIDANCE_RESUMED, "guidance"))
             }
             VoiceCommand.Sos -> requestSos()
-            VoiceCommand.HelpCommands -> say(EnginePhrases.info(EnginePhrases.HELP, "help"))
+            VoiceCommand.HelpCommands -> {
+                val extra = skills.flatMap { it.examples.take(1) }.take(6)
+                val text = if (extra.isEmpty()) EnginePhrases.HELP else EnginePhrases.HELP + " Also: " + extra.joinToString(". ") + "."
+                say(EnginePhrases.info(text, "help"))
+            }
             is VoiceCommand.SaveCurrentPlace ->
                 if (cmd.name.isNullOrBlank()) say(EnginePhrases.info(EnginePhrases.SAVE_PLACE_NEEDS_NAME, "save")) else savePlace(cmd.name!!)
             VoiceCommand.TorchOn -> setTorch(true)
@@ -781,6 +796,65 @@ class VisionNavEngine @Inject constructor(
             VoiceCommand.SpeechQuieter -> _effects.tryEmit(EngineEffect.AdjustSpeech(volumeSteps = -1))
             is VoiceCommand.Unknown -> say(EnginePhrases.info(EnginePhrases.NOT_UNDERSTOOD, "voice"))
         }
+    }
+
+    // =====================================================================================
+    // Feature skills
+    // =====================================================================================
+
+    /** Offers the utterance to feature skills. Returns true if one handled it. */
+    private suspend fun runSkill(alternatives: List<String>): Boolean {
+        val normalized = alternatives.map(voiceParser::normalized).filter { it.isNotBlank() }
+        val first = normalized.firstOrNull() ?: return false
+        for (candidate in normalized) {
+            for (skill in skills) {
+                val action = runCatching { skill.match(candidate, normalized - candidate) }.getOrNull() ?: continue
+                log.log("SKILL", "${skill.id}: $first")
+                try {
+                    action.run(skillHost)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    log.log("SKILL", "${skill.id} failed: ${e.message}")
+                    say(EnginePhrases.error(EnginePhrases.SKILL_FAILED, "skill"))
+                }
+                return true
+            }
+        }
+        return false
+    }
+
+    private val skillHost = object : SkillHost {
+        override fun say(text: String, priority: AnnouncementPriority, key: String) {
+            say(Announcement(text, priority, "skill:$key", ttlMs = 8_000))
+        }
+
+        override fun launch(intent: Intent) {
+            _effects.tryEmit(EngineEffect.LaunchIntent(intent))
+        }
+
+        override fun openScreen(route: String) = navigator.open(route)
+
+        override suspend fun ask(question: String): String? {
+            say(question)
+            awaitSpeechIdle()
+            _state.update { it.copy(isListening = true) }
+            val r = speechInput.listenOnce()
+            _state.update { it.copy(isListening = false) }
+            return (r as? SpeechResult.Success)?.alternatives?.firstOrNull()?.takeIf { it.isNotBlank() }
+        }
+
+        override suspend fun confirm(question: String): Boolean {
+            val answer = ask(question)?.let(voiceParser::normalized) ?: return false
+            return YES_WORDS.any { answer == it || answer.startsWith("$it ") }
+        }
+    }
+
+    /** Waits (bounded) until AURA stops speaking, so the microphone doesn't hear AURA's own voice. */
+    private suspend fun awaitSpeechIdle(maxMs: Long = 12_000) {
+        val deadline = time.elapsedMs() + maxMs
+        delay(150)
+        while (audio.speaking.value != null && time.elapsedMs() < deadline) delay(100)
     }
 
     // =====================================================================================
@@ -892,6 +966,7 @@ class VisionNavEngine @Inject constructor(
         private const val CONTEXT_REFETCH_MS = 120_000L
         private const val MAX_OBSERVATION_LINES = 8
         private const val PREVIEW_REUSE_MS = 120_000L
+        private val YES_WORDS = listOf("yes", "yeah", "yep", "sure", "ok", "okay", "confirm", "do it", "send", "go ahead")
         private val NOT_OBSERVATIONS = setOf(CrossingPhrases.OBSERVING, CrossingPhrases.COVERAGE_REMINDER, CrossingPhrases.OBSERVATION_ENDED)
         private const val NO_LOCATION = "no location"
         private val OBSERVING_STATES = setOf(CrossingAssistState.OBSERVING_TRAFFIC, CrossingAssistState.OBSERVATION_UNCERTAIN)
